@@ -38,7 +38,7 @@ ADDR get_address(WORD* mem, ADDR addr) {
 
 void set_address(WORD* mem, ADDR at, ADDR val) {
   mem[at] = val >> ADDR_SIZE;
-  mem[at+1] = val & 0x00ff;
+  mem[at+1] = (WORD)val;
 }
 
 DWORD get_dword(WORD* mem, ADDR addr) {
@@ -47,7 +47,7 @@ DWORD get_dword(WORD* mem, ADDR addr) {
 
 void set_dword(WORD* mem, ADDR addr, DWORD data) {
   mem[addr] = data >> WORD_SIZE;
-  mem[addr+1] = data & 0x00ff;
+  mem[addr+1] = (WORD)data;
 }
 
 QWORD get_qword(WORD* mem, ADDR addr) {
@@ -59,7 +59,7 @@ void set_qword(WORD* mem, ADDR addr, QWORD data) {
   mem[addr] = data >> WORD_SIZE * 3;
   mem[addr+1] = data >> WORD_SIZE * 2;
   mem[addr+2] = data >> WORD_SIZE;
-  mem[addr+3] = data & 0x0000ffff;
+  mem[addr+3] = (WORD)data;
 }
 
 // I/O ///////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ size_t read_program(WORD* mem, const char* filename) {
 // Main //////////////////////////////////////////////////////////////////////
 int main() {
   // Some variables we need
-  size_t sp, pc, bp, prog_len;
+  size_t sp, bp, pc, fp, prog_len;
   BYTE comp;
   WORD* mem;
 
@@ -104,10 +104,15 @@ int main() {
 
   // Set up the address variables
   pc = (size_t)P_START;
-  bp = (size_t)P_START + prog_len + 0x0003;  // Start stack after program
+  bp = (size_t)LAST_ADDR - 3;
   sp = bp;
 
   // Debug info
+  mem[bp] = 0xaa;
+  mem[bp+1] = 0xbb;
+  mem[bp+2] = 0xcc;
+  mem[bp+3] = 0xdd;
+
   printf("PC: %x\n", pc);
   printf("BP: %x\n", bp);
   printf("SP: %x\n", sp);
@@ -129,13 +134,13 @@ int main() {
   QWORD c, d;
 
   while (run) {
-    if (sp < bp) {
+    if (sp > bp) {
       fprintf(stderr, "Error: Stack Underflow: sp=%x, bp=%x\n", sp, bp);
       exit(1);
-    } else if (sp >= LAST_ADDR) {
+    } else if (sp <= prog_len) {
       fprintf(stderr, "Error: Stack Overflow: %x\n", sp);
       exit(1);
-    } else if (pc >= bp) {
+    } else if (pc >= prog_len) {
       fprintf(stderr, "Error: Program counter out of bounds: pc=%x, bp=%x\n", pc, bp);
       exit(1);
     }
@@ -148,141 +153,145 @@ int main() {
 
       /// WORDS ///
       case PUSH:
-        mem[++sp] = mem[++pc];
+        mem[--sp] = mem[++pc];
         break;
       case POP:
-        sp--;
+        sp++;
         break;
       case ADD:
-        mem[sp-1] = mem[sp-1] + mem[sp];
-        sp--;
+        mem[sp+1] = mem[sp] + mem[sp+1];
+        sp++;
         break;
       case SUB:
-        mem[sp-1] = mem[sp-1] - mem[sp];
-        sp--;
+        mem[sp+1] = mem[sp] - mem[sp+1];
+        sp++;
         break;
       case MULT:
-        mem[sp-1] = mem[sp-1] * mem[sp];
-        sp--;
+        mem[sp+1] = mem[sp] * mem[sp+1];
+        sp++;
         break;
       case DIV:
-        mem[sp-1] = mem[sp-1] / mem[sp];
-        sp--;
+        mem[sp+1] = mem[sp] / mem[sp+1];
+        sp++;
         break;
       case EQ:
-        mem[sp-1] = mem[sp-1] == mem[sp];
-        sp--;
+        mem[sp+1] = mem[sp] == mem[sp+1];
+        sp++;
         break;
       case LT:
-        mem[sp-1] = mem[sp-1] < mem[sp];
-        sp--;
+        mem[sp+1] = mem[sp] < mem[sp+1];
+        sp++;
         break;
       case GT:
-        mem[sp-1] = mem[sp-1] > mem[sp];
-        sp--;
+        mem[sp+1] = mem[sp] > mem[sp+1];
+        sp++;
         break;
 
       /// DOUBLE WORDS ///
       case PUSH_D:
-        mem[++sp] = mem[++pc];
-        mem[++sp] = mem[++pc];
+        pc++;
+        mem[--sp] = mem[pc+1];
+        mem[--sp] = mem[pc];
+        pc++;
         break;
       case POP_D:
-        sp-=2;
+        sp+=2;
         break;
       case ADD_D:
-        a = get_dword(mem, sp-3);
-        b = get_dword(mem, sp-1);
-        set_dword(mem, sp-3, a + b);
-        sp-=2;
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=2;
+        set_dword(mem, sp, a + b);
         break;
       case SUB_D:
-        a = get_dword(mem, sp-3);
-        b = get_dword(mem, sp-1);
-        set_dword(mem, sp-3, a - b);
-        sp-=2;
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=2;
+        set_dword(mem, sp, a - b);
         break;
       case MULT_D:
-        a = get_dword(mem, sp-3);
-        b = get_dword(mem, sp-1);
-        set_dword(mem, sp-3, a * b);
-        sp-=2;
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=2;
+        set_dword(mem, sp, a * b);
         break;
       case DIV_D:
-        a = get_dword(mem, sp-3);
-        b = get_dword(mem, sp-1);
-        set_dword(mem, sp-3, a / b);
-        sp-=2;
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=2;
+        set_dword(mem, sp, a / b);
         break;
       case EQ_D:
-        a = get_dword(mem, sp-3);
-        b = get_dword(mem, sp-1);
-        sp-=3;
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=3;
         mem[sp] = a == b;
         break;
       case LT_D:
-        a = get_dword(mem, sp-3);
-        b = get_dword(mem, sp-1);
-        sp-=3;
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=3;
         mem[sp] = a < b;
         break;
       case GT_D:
-        a = get_dword(mem, sp-3);
-        b = get_dword(mem, sp-1);
-        sp-=3;
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=3;
         mem[sp] = a > b;
         break;
 
       /// QUAD WORDS ///
       case PUSH_Q:
-        mem[++sp] = mem[++pc];
-        mem[++sp] = mem[++pc];
-        mem[++sp] = mem[++pc];
-        mem[++sp] = mem[++pc];
+        pc++;
+        mem[--sp] = mem[pc+3];
+        mem[--sp] = mem[pc+2];
+        mem[--sp] = mem[pc+1];
+        mem[--sp] = mem[pc];
+        pc+=3;
         break;
       case POP_Q:
-        sp-=4;
+        sp+=4;
         break;
       case ADD_Q:
-        c = get_qword(mem, sp-7);
-        d = get_qword(mem, sp-3);
-        set_qword(mem, sp-7, c + d);
-        sp-=4;
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, c + d);
         break;
       case SUB_Q:
-        c = get_qword(mem, sp-7);
-        d = get_qword(mem, sp-3);
-        set_qword(mem, sp-7, c - d);
-        sp-=4;
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, c - d);
         break;
       case MULT_Q:
-        c = get_qword(mem, sp-7);
-        d = get_qword(mem, sp-3);
-        set_qword(mem, sp-7, c * d);
-        sp-=4;
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, c * d);
         break;
       case DIV_Q:
-        c = get_qword(mem, sp-7);
-        d = get_qword(mem, sp-3);
-        set_qword(mem, sp-7, c / d);
-        sp-=4;
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, c * d);
         break;
       case EQ_Q:
-        c = get_qword(mem, sp-7);
-        d = get_qword(mem, sp-3);
-        sp-=7;
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=7;
         mem[sp] = c == d;
         break;
       case LT_Q:
-        c = get_qword(mem, sp-7);
-        d = get_qword(mem, sp-3);
-        sp-=7;
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=7;
         mem[sp] = c < d;
         break;
       case GT_Q:
-        c = get_qword(mem, sp-7);
-        d = get_qword(mem, sp-3);
-        sp-=7;
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=7;
         mem[sp] = c > d;
         break;
 
@@ -291,11 +300,11 @@ int main() {
         pc = get_address(mem, ++pc);
         continue;
       case JUMP_S:
-        pc = get_address(mem, sp-1);
-        sp-=2;
+        pc = get_address(mem, sp);
+        sp+=2;
         continue;
       case BRANCH:
-        if (mem[sp--]) {
+        if (mem[sp++]) {
           pc = get_address(mem, ++pc);
           continue;
         }
@@ -311,7 +320,9 @@ int main() {
   }
 
   WORD res = mem[sp];
-  printf("\nmem[sp] = %x (%d)\n", res, res);
+  DWORD resD = get_dword(mem, sp);
+  QWORD resQ = get_qword(mem, sp);
+  printf("\nmem[sp] = %x (%d), %x (%d), %x (%d)\n", res, res, resD, resD, resQ, resQ);
 
   // Free the VM's memory
   free(mem);
