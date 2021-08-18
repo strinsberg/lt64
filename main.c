@@ -1,6 +1,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "stdbool.h"
+#include "string.h"
 
 // TODO Change things so the stack starts at the top and grows down
 // it will make it easier to reason about and deal with double and quad word
@@ -20,10 +21,10 @@ typedef unsigned int QWORD;
 
 // OP codes //////////////////////////////////////////////////////////////////
 enum OP{ HALT=0x00,
-  PUSH, POP, ADD, SUB, MULT, DIV, EQ, LT, GT, // 09
-  PUSH_D, POP_D, ADD_D, SUB_D, MULT_D, DIV_D, EQ_D, LT_D, GT_D, // 12
-  PUSH_Q, POP_Q, ADD_Q, SUB_Q, MULT_Q, DIV_Q, EQ_Q, LT_Q, GT_Q, // 1B
-  JUMP, JUMP_S, BRANCH  // 1E
+  PUSH, POP, GET, ADD, SUB, MULT, DIV, EQ, LT, GT, // 0A
+  PUSH_D, POP_D, GET_D, ADD_D, SUB_D, MULT_D, DIV_D, EQ_D, LT_D, GT_D, // 14
+  PUSH_Q, POP_Q, GET_Q, ADD_Q, SUB_Q, MULT_Q, DIV_Q, EQ_Q, LT_Q, GT_Q, // 1E
+  JUMP, JUMP_S, BRANCH, CALL, RET  // 23
 };
 
 // Memory ////////////////////////////////////////////////////////////////////
@@ -68,7 +69,7 @@ size_t read_program(WORD* mem, const char* filename) {
 
   fseek(fptr, 0, SEEK_END);
   size_t prog_len = (size_t) ftell(fptr);
-  if (prog_len > (size_t)LAST_ADDR - P_START) {
+  if (prog_len > (size_t)LAST_ADDR) {
     fprintf(stderr, "Error: Program will not fit in memory\n");
     exit(1);
   }
@@ -84,10 +85,18 @@ size_t read_program(WORD* mem, const char* filename) {
   return prog_len;
 }
 
+void display_range(WORD* mem, ADDR start, ADDR end) {
+  printf("Mem Range [%x, %x): ", start, end);
+  for (size_t i = start; i < end; i++) {
+    printf("%x ", mem[i]);
+  }
+  printf("\n");
+}
+
 // Main //////////////////////////////////////////////////////////////////////
 int main() {
   // Some variables we need
-  size_t sp, bp, pc, fp, prog_len;
+  ADDR sp, bp, pc, ra, fp, prog_len;
   BYTE comp;
   WORD* mem;
 
@@ -100,11 +109,13 @@ int main() {
 
   // Read the program file as bytes into memory starting at PSTART
   // TODO use an argument for the program filename
-  prog_len = read_program(mem, "input.vm");
+  prog_len = (ADDR)read_program(mem, "input.vm");
 
   // Set up the address variables
-  pc = (size_t)P_START;
-  bp = (size_t)LAST_ADDR - 3;
+  pc = P_START;
+  ra = pc;
+  bp = LAST_ADDR - 3;
+  fp = bp;
   sp = bp;
 
   // Debug info
@@ -115,6 +126,7 @@ int main() {
 
   printf("PC: %x\n", pc);
   printf("BP: %x\n", bp);
+  printf("FP: %x\n", fp);
   printf("SP: %x\n", sp);
 
   printf("\nProgram Size: %x\n", prog_len);
@@ -158,6 +170,9 @@ int main() {
       case POP:
         sp++;
         break;
+      case GET:
+        mem[--sp] = mem[fp + 4 + mem[++pc]];
+        break;
       case ADD:
         mem[sp+1] = mem[sp] + mem[sp+1];
         sp++;
@@ -196,6 +211,11 @@ int main() {
         break;
       case POP_D:
         sp+=2;
+        break;
+      case GET_D:
+        pc++;
+        mem[--sp] = mem[fp + 4 + mem[pc] + 1];
+        mem[--sp] = mem[fp + 4 + mem[pc]];
         break;
       case ADD_D:
         a = get_dword(mem, sp);
@@ -251,6 +271,13 @@ int main() {
         break;
       case POP_Q:
         sp+=4;
+        break;
+      case GET_Q:
+        pc++;
+        mem[--sp] = mem[fp + 4 + mem[pc] + 3];
+        mem[--sp] = mem[fp + 4 + mem[pc] + 2];
+        mem[--sp] = mem[fp + 4 + mem[pc] + 1];
+        mem[--sp] = mem[fp + 4 + mem[pc]];
         break;
       case ADD_Q:
         c = get_qword(mem, sp);
@@ -310,6 +337,31 @@ int main() {
         }
         pc+=2;
         break;
+      case CALL:
+        sp-=2;
+        set_address(mem, sp, ra);
+        sp-=2;
+        set_address(mem, sp, fp);
+        ra = pc+4;
+        fp = sp;
+        pc = get_address(mem, pc+2);
+        display_range(mem, sp, bp);
+        continue;
+      case RET:
+        {
+        a = get_address(mem, fp);  // saved fp
+        b = get_address(mem, fp+2);  // saved ra
+        //printf("old fp: %x, old ra: %x\n", a, b);
+        //printf("fp: %x, ra: %x, sp: %x, pc: %x\n", fp, ra, sp, pc);
+        ADDR size = fp - sp;
+        memcpy(mem + a - size, mem + fp - size, size);
+        sp = a - size;
+        pc = ra;
+        fp = a;
+        ra = b;
+        display_range(mem, sp, bp);
+        continue;
+        }
 
       /// BAD OP CODE ///
       default:
@@ -317,6 +369,7 @@ int main() {
         exit(1);
     }
     pc++;
+    display_range(mem, sp, bp);
   }
 
   WORD res = mem[sp];
