@@ -3,11 +3,6 @@
 #include "stdbool.h"
 #include "string.h"
 
-// TODO implement a load and store that can access previously pushed stack data.
-// For example if one wanted to declare a variable in a C program it would
-// coorespond to pushing a space to the stack and replacing c program values
-// with the address. Then load and store would push the value at that address
-// or store the top of the stack in it.
 // TODO Add bit operations.
 // TODO Add system calls, really just C calls.
 // TODO Set things up so that debugging info can be turned on and off.
@@ -23,10 +18,12 @@ typedef unsigned int QWORD;
 
 // OP codes //////////////////////////////////////////////////////////////////
 enum OP{ HALT=0x00,
-  PUSH, POP, GET, ADD, SUB, MULT, DIV, EQ, LT, GT, // 0A
-  PUSH_D, POP_D, GET_D, ADD_D, SUB_D, MULT_D, DIV_D, EQ_D, LT_D, GT_D, // 14
-  PUSH_Q, POP_Q, GET_Q, ADD_Q, SUB_Q, MULT_Q, DIV_Q, EQ_Q, LT_Q, GT_Q, // 1E
-  JUMP, JUMP_S, BRANCH, CALL, RET  // 23
+  PUSH, POP, GET, LOAD, STORE, ADD, SUB, MULT, DIV, EQ, LT, GT, // 0C
+  PUSH_D, POP_D, GET_D, LOAD_D, STORE_D,  // 11
+  ADD_D, SUB_D, MULT_D, DIV_D, EQ_D, LT_D, GT_D, // 18
+  PUSH_Q, POP_Q, GET_Q, LOAD_Q, STORE_Q,  // 1D
+  ADD_Q, SUB_Q, MULT_Q, DIV_Q, EQ_Q, LT_Q, GT_Q, // 24
+  JUMP, JUMP_IM, BRANCH, CALL, RET,  // 29
 };
 
 // Memory ////////////////////////////////////////////////////////////////////
@@ -174,6 +171,15 @@ int main() {
       case GET:
         mem[--sp] = mem[fp + META_OFF + mem[++pc]];
         break;
+      case LOAD:
+        a = get_address(mem, sp);
+        mem[++sp] = mem[a];
+        break;
+      case STORE:
+        a = get_address(mem, sp);
+        sp+=2;
+        mem[a] = mem[sp++];
+        break;
       case ADD:
         mem[sp+1] = mem[sp] + mem[sp+1];
         sp++;
@@ -217,6 +223,18 @@ int main() {
         pc++;
         mem[--sp] = mem[fp + META_OFF + mem[pc] + 1];
         mem[--sp] = mem[fp + META_OFF + mem[pc]];
+        break;
+      case LOAD_D:
+        a = get_address(mem, sp);
+        mem[sp+1] = mem[a+1];
+        mem[sp] = mem[a];
+        break;
+      case STORE_D:
+        a = get_address(mem, sp);
+        sp+=2;
+        mem[a+1] = mem[sp+1];
+        mem[a] = mem[sp];
+        sp+=2;
         break;
       case ADD_D:
         a = get_dword(mem, sp);
@@ -280,6 +298,23 @@ int main() {
         mem[--sp] = mem[fp + META_OFF + mem[pc] + 1];
         mem[--sp] = mem[fp + META_OFF + mem[pc]];
         break;
+      case LOAD_Q:
+        a = get_address(mem, sp);
+        sp-=2;
+        mem[sp+3] = mem[a+3];
+        mem[sp+2] = mem[a+2];
+        mem[sp+1] = mem[a+1];
+        mem[sp] = mem[a];
+        break;
+      case STORE_Q:
+        a = get_address(mem, sp);
+        sp+=2;
+        mem[a+3] = mem[sp+3];
+        mem[a+2] = mem[sp+2];
+        mem[a+1] = mem[sp+1];
+        mem[a] = mem[sp];
+        sp+=4;
+        break;
       case ADD_Q:
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
@@ -325,11 +360,11 @@ int main() {
 
       /// JUMPS ///
       case JUMP:
-        pc = get_address(mem, ++pc);
-        continue;
-      case JUMP_S:
         pc = get_address(mem, sp);
         sp+=2;
+        continue;
+      case JUMP_IM:
+        pc = get_address(mem, ++pc);
         continue;
       case BRANCH:
         if (mem[sp++]) {
