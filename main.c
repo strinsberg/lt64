@@ -3,13 +3,6 @@
 #include "stdbool.h"
 #include "string.h"
 
-// TODO current calling behaviour is not quite right. We need to use the number
-// of parameters to ensure that the return values only overwrite args and not
-// values all values on the stack. For example say we want to push something to
-// add to the return value of a procedure it will not be available after the
-// return with the current semantics. It may then also be useful to give return
-// a value to decide how much of the top of the current stack to copy back
-// as well.
 // TODO implement a load and store that can access previously pushed stack data.
 // For example if one wanted to declare a variable in a C program it would
 // coorespond to pushing a space to the stack and replacing c program values
@@ -41,31 +34,32 @@ const ADDR P_START = 0x00;
 const ADDR LAST_ADDR = 0xffff;
 const BYTE WORD_SIZE = 8;
 const BYTE ADDR_SIZE = 8;
+const WORD META_OFF = 5;
 
-ADDR get_address(WORD* mem, ADDR addr) {
+static inline ADDR get_address(WORD* mem, ADDR addr) {
   return (mem[addr] << ADDR_SIZE) | mem[addr+1];
 }
 
-void set_address(WORD* mem, ADDR at, ADDR val) {
+static inline void set_address(WORD* mem, ADDR at, ADDR val) {
   mem[at] = val >> ADDR_SIZE;
   mem[at+1] = (WORD)val;
 }
 
-DWORD get_dword(WORD* mem, ADDR addr) {
+static inline DWORD get_dword(WORD* mem, ADDR addr) {
   return (mem[addr] << WORD_SIZE) | mem[addr+1];
 }
 
-void set_dword(WORD* mem, ADDR addr, DWORD data) {
+static inline void set_dword(WORD* mem, ADDR addr, DWORD data) {
   mem[addr] = data >> WORD_SIZE;
   mem[addr+1] = (WORD)data;
 }
 
-QWORD get_qword(WORD* mem, ADDR addr) {
+static inline QWORD get_qword(WORD* mem, ADDR addr) {
   return (mem[addr] << WORD_SIZE * 3) | (mem[addr+1] << WORD_SIZE * 2)
          | (mem[addr+2] << WORD_SIZE) | mem[addr+3];
 }
 
-void set_qword(WORD* mem, ADDR addr, QWORD data) {
+static inline void set_qword(WORD* mem, ADDR addr, QWORD data) {
   mem[addr] = data >> WORD_SIZE * 3;
   mem[addr+1] = data >> WORD_SIZE * 2;
   mem[addr+2] = data >> WORD_SIZE;
@@ -135,6 +129,7 @@ int main() {
 
   // Debug info
   printf("PC: %x\n", pc);
+  printf("RA: %x\n", pc);
   printf("BP: %x\n", bp);
   printf("FP: %x\n", fp);
   printf("SP: %x\n", sp);
@@ -153,14 +148,17 @@ int main() {
       fprintf(stderr, "Error: Stack Underflow: sp=%x, bp=%x\n", sp, bp);
       exit(1);
     } else if (sp <= prog_len) {
-      fprintf(stderr, "Error: Stack Overflow: %x\n", sp);
+      fprintf(stderr, "Error: Stack Overflow: sp=%x, prog_end=%x\n",
+              sp, prog_len);
       exit(1);
     } else if (pc >= prog_len) {
-      fprintf(stderr, "Error: Program counter out of bounds: pc=%x, bp=%x\n", pc, bp);
+      fprintf(stderr,
+              "Error: Program counter out of bounds: pc=%x, prog_end=%x\n",
+              pc, prog_len);
       exit(1);
     }
 
-    printf("OP: %x\n", mem[pc]);
+    printf("OP: %x, SP: %x, PC: %x\n", mem[pc], sp, pc);
     switch (mem[pc]) {
       case HALT:
         run = false;
@@ -174,7 +172,7 @@ int main() {
         sp++;
         break;
       case GET:
-        mem[--sp] = mem[fp + 4 + mem[++pc]];
+        mem[--sp] = mem[fp + META_OFF + mem[++pc]];
         break;
       case ADD:
         mem[sp+1] = mem[sp] + mem[sp+1];
@@ -217,8 +215,8 @@ int main() {
         break;
       case GET_D:
         pc++;
-        mem[--sp] = mem[fp + 4 + mem[pc] + 1];
-        mem[--sp] = mem[fp + 4 + mem[pc]];
+        mem[--sp] = mem[fp + META_OFF + mem[pc] + 1];
+        mem[--sp] = mem[fp + META_OFF + mem[pc]];
         break;
       case ADD_D:
         a = get_dword(mem, sp);
@@ -277,10 +275,10 @@ int main() {
         break;
       case GET_Q:
         pc++;
-        mem[--sp] = mem[fp + 4 + mem[pc] + 3];
-        mem[--sp] = mem[fp + 4 + mem[pc] + 2];
-        mem[--sp] = mem[fp + 4 + mem[pc] + 1];
-        mem[--sp] = mem[fp + 4 + mem[pc]];
+        mem[--sp] = mem[fp + META_OFF + mem[pc] + 3];
+        mem[--sp] = mem[fp + META_OFF + mem[pc] + 2];
+        mem[--sp] = mem[fp + META_OFF + mem[pc] + 1];
+        mem[--sp] = mem[fp + META_OFF + mem[pc]];
         break;
       case ADD_Q:
         c = get_qword(mem, sp);
@@ -345,24 +343,21 @@ int main() {
         set_address(mem, sp, ra);
         sp-=2;
         set_address(mem, sp, fp);
-        ra = pc+4;
+        mem[--sp] = mem[++pc];
+        pc++;
+        ra = pc+2;
         fp = sp;
-        // not using the number of words given for the arguments yet
-        // need to add them to the meta data so they can be used for
-        // the return value copy.
-        pc = get_address(mem, pc+2);
+        pc = get_address(mem, pc);
         display_range(mem, sp, bp);
         continue;
       case RET:
         {
-        a = get_address(mem, fp);  // saved fp
-        b = get_address(mem, fp+2);  // saved ra
-        ADDR size = fp - sp;
-        // need to take into account the number of words that were considered
-        // to be arguments when doing this copy, so the destination is
-        // really mem + fp + meta data words + argument words
-        memcpy(mem + a - size, mem + fp - size, size);
-        sp = a - size;
+        a = get_address(mem, fp+1);  // saved fp
+        b = get_address(mem, fp+3);  // saved ra
+        ADDR frame_bottom = fp + META_OFF + mem[fp];
+        ADDR ret_sp = frame_bottom - mem[pc+1];
+        memcpy(mem + ret_sp, mem + sp, mem[pc+1]);
+        sp = ret_sp;
         pc = ra;
         fp = a;
         ra = b;
