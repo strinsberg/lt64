@@ -3,14 +3,23 @@
 #include "stdbool.h"
 #include "string.h"
 
-// TODO Change things so the stack starts at the top and grows down
-// it will make it easier to reason about and deal with double and quad word
-// addresses because the stack pointer will be at the msb rather than the lsb.
-// TODO implement storage to push an value at an address and to store to one
+// TODO current calling behaviour is not quite right. We need to use the number
+// of parameters to ensure that the return values only overwrite args and not
+// values all values on the stack. For example say we want to push something to
+// add to the return value of a procedure it will not be available after the
+// return with the current semantics. It may then also be useful to give return
+// a value to decide how much of the top of the current stack to copy back
+// as well.
+// TODO implement a load and store that can access previously pushed stack data.
+// For example if one wanted to declare a variable in a C program it would
+// coorespond to pushing a space to the stack and replacing c program values
+// with the address. Then load and store would push the value at that address
+// or store the top of the stack in it.
 // TODO Add bit operations.
 // TODO Add system calls, really just C calls.
-// TODO Implement dynamic memory
+// TODO Set things up so that debugging info can be turned on and off.
 // TODO setup an assembler (can use a different langauge).
+// TODO Implement dynamic memory if it is possible.
 
 typedef unsigned char BYTE;
 typedef unsigned short ADDR;
@@ -124,18 +133,12 @@ int main() {
   mem[bp+2] = 0xcc;
   mem[bp+3] = 0xdd;
 
+  // Debug info
   printf("PC: %x\n", pc);
   printf("BP: %x\n", bp);
   printf("FP: %x\n", fp);
   printf("SP: %x\n", sp);
-
-  printf("\nProgram Size: %x\n", prog_len);
-  printf("Program Words: ");
-  while (pc < (size_t)P_START + prog_len) {
-    printf("%x ", mem[pc++]);
-  };
-  printf("\n");
-  pc = P_START;  // To offset the debugging
+  display_range(mem, pc, prog_len);
 
   // Execute Program
   // Before this can be done there needs to be an instruction set and
@@ -344,6 +347,9 @@ int main() {
         set_address(mem, sp, fp);
         ra = pc+4;
         fp = sp;
+        // not using the number of words given for the arguments yet
+        // need to add them to the meta data so they can be used for
+        // the return value copy.
         pc = get_address(mem, pc+2);
         display_range(mem, sp, bp);
         continue;
@@ -351,9 +357,10 @@ int main() {
         {
         a = get_address(mem, fp);  // saved fp
         b = get_address(mem, fp+2);  // saved ra
-        //printf("old fp: %x, old ra: %x\n", a, b);
-        //printf("fp: %x, ra: %x, sp: %x, pc: %x\n", fp, ra, sp, pc);
         ADDR size = fp - sp;
+        // need to take into account the number of words that were considered
+        // to be arguments when doing this copy, so the destination is
+        // really mem + fp + meta data words + argument words
         memcpy(mem + a - size, mem + fp - size, size);
         sp = a - size;
         pc = ra;
