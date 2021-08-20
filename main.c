@@ -3,11 +3,46 @@
 #include "stdbool.h"
 #include "string.h"
 
-// TODO Add bit operations.
-// TODO Add system calls, really just C calls.
+#define TESTING 1
+
+// TODO Add system calls, really just C calls. Maybe just a print for now.
 // TODO Set things up so that debugging info can be turned on and off.
-// TODO setup an assembler (can use a different langauge).
+// TODO setup an assembler (can use a different langauge). Needs to keep good
+// track of sp,pc,ra,fp in order to allow referencing thier values at a given
+// time in execution. This should probably already be done for some things like
+// labeling etc. so it should not be too much overhead. If it is not easy then
+// there has to be OP codes for pushing thier values to the stack, which might
+// be convinient anyway.
 // TODO Implement dynamic memory if it is possible.
+// TODO Bitwise operations could be added, but are annoying as they all
+// require 3 versions as well. They are probably useful, but not necessary for
+// now. Implement them when you can.
+// TODO Add some support for floating point numbers. Can this be done just by
+// converting them into a byte/int form on read/assemble and printing them? I
+// know it is possible to implement fixed precision floating points where there are
+// always x bits before the decimal and y bits after. This might be a good options
+// as they can probably easily be represented the way I am currently.
+//
+// NOTE PUSH, GET, CALL, and RET are all operations that must be given arguments
+// in the program because the nature of these instructions is that these values
+// will never be dynamic. If you want to push a value you will need to know
+// that value (if you know the address of that value it is a load now). GET you
+// need to have knowledge of the expected argument layout for the procedure you're
+// in. CALL you must know the label of the procedure when the program is written
+// or at least assembled. For CALL and RET it is necessary to know the number
+// of arguments that you will pass and return when calling or writing the
+// procedure.
+// All other instructions can operate on data they know nothing about so it must
+// be pushed to the stack for them to get. Or like load and store you might
+// know the address when writing the program or you might get one at runtime. I.e.
+// passing a reference to a procedure.
+// THOUGHT Is it possible to adjust the memory layout without losing a lot of
+// space for OPs? Or is it ok to limit the double word stuff to a min as it will
+// be only used for addresses? Or even just make the names for the operations
+// in the assembler more tailored to the way one might expect to use them the
+// most often? Though if things are set up to satisfy integer programming
+// instead of charachter programming then it really seems like the first point
+// should be heavily considered.
 
 typedef unsigned char BYTE;
 typedef unsigned short ADDR;
@@ -18,12 +53,19 @@ typedef unsigned int QWORD;
 
 // OP codes //////////////////////////////////////////////////////////////////
 enum OP{ HALT=0x00,
-  PUSH, POP, GET, LOAD, STORE, ADD, SUB, MULT, DIV, EQ, LT, GT, // 0C
-  PUSH_D, POP_D, GET_D, LOAD_D, STORE_D,  // 11
-  ADD_D, SUB_D, MULT_D, DIV_D, EQ_D, LT_D, GT_D, // 18
-  PUSH_Q, POP_Q, GET_Q, LOAD_Q, STORE_Q,  // 1D
-  ADD_Q, SUB_Q, MULT_Q, DIV_Q, EQ_Q, LT_Q, GT_Q, // 24
-  JUMP, JUMP_IM, BRANCH, CALL, RET,  // 29
+  PUSH, POP, GET, LOAD, STORE,  // 05
+  ADD, SUB, MULT, DIV, DIVU,  // 0A
+  EQ, LT, LTU, GT, GTU,  // 0F
+
+  PUSH_D, POP_D, GET_D, LOAD_D, STORE_D,  // 14
+  ADD_D, SUB_D, MULT_D, DIV_D, DIV_DU,  // 19
+  EQ_D, LT_D, LT_DU, GT_D, GT_DU,  // 1E
+
+  PUSH_Q, POP_Q, GET_Q, LOAD_Q, STORE_Q,  // 23
+  ADD_Q, SUB_Q, MULT_Q, DIV_Q, DIV_QU,  // 28
+  EQ_Q, LT_Q, LT_QU, GT_Q, GT_QU,  // 2D
+
+  JUMP, JUMP_IM, BRANCH, CALL, RET,  // 32
 };
 
 // Memory ////////////////////////////////////////////////////////////////////
@@ -86,18 +128,17 @@ size_t read_program(WORD* mem, const char* filename) {
 }
 
 void display_range(WORD* mem, ADDR start, ADDR end) {
-  printf("Mem Range [%x, %x): ", start, end);
+  fprintf(stderr, "Mem Range [%x, %x): ", start, end);
   for (size_t i = start; i < end; i++) {
-    printf("%x ", mem[i]);
+    fprintf(stderr, "%x ", mem[i]);
   }
-  printf("\n");
+  fprintf(stderr, "\n");
 }
 
 // Main //////////////////////////////////////////////////////////////////////
 int main() {
   // Some variables we need
   ADDR sp, bp, pc, ra, fp, prog_len;
-  BYTE comp;
   WORD* mem;
 
   // Allocate memory for the VM
@@ -118,24 +159,24 @@ int main() {
   fp = bp;
   sp = bp;
 
-  // Debug info
+  // To help keep track if memory in this offset is accidentaly accessed
   mem[bp] = 0xaa;
   mem[bp+1] = 0xbb;
   mem[bp+2] = 0xcc;
   mem[bp+3] = 0xdd;
 
   // Debug info
-  printf("PC: %x\n", pc);
-  printf("RA: %x\n", pc);
-  printf("BP: %x\n", bp);
-  printf("FP: %x\n", fp);
-  printf("SP: %x\n", sp);
+  fprintf(stderr, "PC: %x\n", pc);
+  fprintf(stderr, "RA: %x\n", pc);
+  fprintf(stderr, "BP: %x\n", bp);
+  fprintf(stderr, "FP: %x\n", fp);
+  fprintf(stderr, "SP: %x\n", sp);
   display_range(mem, pc, prog_len);
 
   // Execute Program
   // Before this can be done there needs to be an instruction set and
   // some implementation for these instructions.
-  printf("\n=== Execute Program ===\n");
+  fprintf(stderr, "\n=== Execute Program ===\n");
   bool run = true;
   DWORD a, b;
   QWORD c, d;
@@ -155,7 +196,7 @@ int main() {
       exit(1);
     }
 
-    printf("OP: %x, SP: %x, PC: %x\n", mem[pc], sp, pc);
+    fprintf(stderr, "OP: %x, SP: %x, PC: %x\n", mem[pc], sp, pc);
     switch (mem[pc]) {
       case HALT:
         run = false;
@@ -402,7 +443,7 @@ int main() {
 
       /// BAD OP CODE ///
       default:
-        fprintf(stderr, "Error: Unknown OP code: %x\n", mem[pc]);
+        //fprintf(stderr, "Error: Unknown OP code: %x\n", mem[pc]);
         exit(1);
     }
     pc++;
@@ -412,7 +453,16 @@ int main() {
   WORD res = mem[sp];
   DWORD resD = get_dword(mem, sp);
   QWORD resQ = get_qword(mem, sp);
-  printf("\nmem[sp] = %x (%d), %x (%d), %x (%d)\n", res, res, resD, resD, resQ, resQ);
+  fprintf(stderr, "\nmem[sp] = %x (%d), %x (%d), %x (%d)\n\n",
+          res, res, resD, resD, resQ, resQ);
+
+  // Print the stack to stdout so program results can be seen
+  if (TESTING) {
+    for (size_t i = sp; i < bp; i++) {
+      printf("%x ", mem[i]);
+    }
+    printf("\n");
+  }
 
   // Free the VM's memory
   free(mem);
