@@ -3,10 +3,24 @@
 #include "stdbool.h"
 #include "string.h"
 
-#define TESTING 1
+#ifdef TEST
+  const char* INPUT_FILE = "test.vm";
+  const bool TESTING = true;
+#else
+  const char* INPUT_FILE = "input.vm";
+  const bool TESTING = false;
+#endif
+
+#ifdef DEBUG
+  const bool DEBUGGING = true;
+#else
+  const bool DEBUGGING = false;
+#endif
+  
+// NOTE new OP codes must be added at the end of the enum. The testing program
+// will be broken if they are inserted in the middle.
 
 // TODO Add system calls, really just C calls. Maybe just a print for now.
-// TODO Set things up so that debugging info can be turned on and off.
 // TODO setup an assembler (can use a different langauge). Needs to keep good
 // track of sp,pc,ra,fp in order to allow referencing thier values at a given
 // time in execution. This should probably already be done for some things like
@@ -36,13 +50,6 @@
 // be pushed to the stack for them to get. Or like load and store you might
 // know the address when writing the program or you might get one at runtime. I.e.
 // passing a reference to a procedure.
-// THOUGHT Is it possible to adjust the memory layout without losing a lot of
-// space for OPs? Or is it ok to limit the double word stuff to a min as it will
-// be only used for addresses? Or even just make the names for the operations
-// in the assembler more tailored to the way one might expect to use them the
-// most often? Though if things are set up to satisfy integer programming
-// instead of charachter programming then it really seems like the first point
-// should be heavily considered.
 
 typedef unsigned char BYTE;
 typedef unsigned short ADDR;
@@ -50,6 +57,16 @@ typedef unsigned short ADDR;
 typedef unsigned char WORD;
 typedef unsigned short DWORD;
 typedef unsigned int QWORD;
+
+// Exit codes //
+
+const size_t EXIT_MEM = 1;
+const size_t EXIT_LEN = 2;
+const size_t EXIT_FILE = 3;
+const size_t EXIT_SOF = 4;
+const size_t EXIT_SUF = 5;
+const size_t EXIT_POB = 6;
+const size_t EXIT_OP = 7;
 
 // OP codes //////////////////////////////////////////////////////////////////
 enum OP{ HALT=0x00,
@@ -67,6 +84,17 @@ enum OP{ HALT=0x00,
 
   JUMP, JUMP_IM, BRANCH, CALL, RET,  // 32
 };
+// need SL SR SLD SRD SLQ SRQ
+// need SL_U SR_U SL_DU SR_DU SL_QU SR_QU
+// need NOT AND OR XOR
+// need SP FP PC RA
+// need PRINT_NUM PRINT_STR PRINT_RANGE
+// num takes args to tell it how much to print and the sign
+// str prints chars from a given address until a 00 is found
+// range prints from one address to another
+// need READ READ_STR
+// read takes an arg to tell it what to read, chars and words can be the same
+// str will get a line and copy it onto the stack with a 00 at the end
 
 // Memory ////////////////////////////////////////////////////////////////////
 const ADDR P_START = 0x00;
@@ -113,14 +141,14 @@ size_t read_program(WORD* mem, const char* filename) {
   size_t prog_len = (size_t) ftell(fptr);
   if (prog_len > (size_t)LAST_ADDR) {
     fprintf(stderr, "Error: Program will not fit in memory\n");
-    exit(1);
+    exit(EXIT_LEN);
   }
   rewind(fptr);
 
   fread(mem + P_START, prog_len, 1, fptr);
   if (ferror(fptr)) {
     fprintf(stderr, "Error: Input file was not read\n");
-    exit(1);
+    exit(EXIT_FILE);
   }
   fclose(fptr);
 
@@ -128,11 +156,21 @@ size_t read_program(WORD* mem, const char* filename) {
 }
 
 void display_range(WORD* mem, ADDR start, ADDR end) {
-  fprintf(stderr, "Mem Range [%x, %x): ", start, end);
   for (size_t i = start; i < end; i++) {
-    fprintf(stderr, "%x ", mem[i]);
+    printf("%02x ", mem[i]);
   }
-  fprintf(stderr, "\n");
+  printf("\n");
+}
+
+void debug_memory(WORD* mem, ADDR start, ADDR end) {
+  if (DEBUGGING) {
+    fprintf(stderr, "Mem Range [0x%04x, 0x%04x): ", start, end);
+    for (size_t i = start; i < end; i++) {
+      fprintf(stderr, "%02x ", mem[i]);
+    }
+    fprintf(stderr, "\n");
+  }
+
 }
 
 // Main //////////////////////////////////////////////////////////////////////
@@ -145,12 +183,12 @@ int main() {
   mem = (WORD*) calloc((size_t)LAST_ADDR + 1, sizeof(BYTE));
   if (mem == NULL) {
     fprintf(stderr, "Error: Could not allocate memory for the VM\n");
-    exit(1);
+    exit(EXIT_MEM);
   }
 
   // Read the program file as bytes into memory starting at PSTART
   // TODO use an argument for the program filename
-  prog_len = (ADDR)read_program(mem, "input.vm");
+  prog_len = (ADDR)read_program(mem, INPUT_FILE);
 
   // Set up the address variables
   pc = P_START;
@@ -166,37 +204,46 @@ int main() {
   mem[bp+3] = 0xdd;
 
   // Debug info
-  fprintf(stderr, "PC: %x\n", pc);
-  fprintf(stderr, "RA: %x\n", pc);
-  fprintf(stderr, "BP: %x\n", bp);
-  fprintf(stderr, "FP: %x\n", fp);
-  fprintf(stderr, "SP: %x\n", sp);
-  display_range(mem, pc, prog_len);
+  if (DEBUGGING) {
+    fprintf(stderr, "PC: 0x%04x\n", pc);
+    fprintf(stderr, "RA: 0x%04x\n", pc);
+    fprintf(stderr, "BP: 0x%04x\n", bp);
+    fprintf(stderr, "FP: 0x%04x\n", fp);
+    fprintf(stderr, "SP: 0x%04x\n", sp);
+    debug_memory(mem, pc, prog_len);
+
+    fprintf(stderr, "\n=== Execute Program ===\n");
+  }
 
   // Execute Program
-  // Before this can be done there needs to be an instruction set and
-  // some implementation for these instructions.
-  fprintf(stderr, "\n=== Execute Program ===\n");
   bool run = true;
   DWORD a, b;
   QWORD c, d;
 
   while (run) {
     if (sp > bp) {
-      fprintf(stderr, "Error: Stack Underflow: sp=%x, bp=%x\n", sp, bp);
-      exit(1);
+      fprintf(stderr, "Error: Stack Underflow: sp=0x%04x, bp=0x%04x\n", sp, bp);
+      fprintf(stderr, "Stack: ");
+      display_range(mem, sp, bp);
+      exit(EXIT_SUF);
     } else if (sp <= prog_len) {
-      fprintf(stderr, "Error: Stack Overflow: sp=%x, prog_end=%x\n",
+      fprintf(stderr, "Error: Stack Overflow: sp=0x%04x, prog_end=0x%04x\n",
               sp, prog_len);
-      exit(1);
+      exit(EXIT_SOF);
     } else if (pc >= prog_len) {
       fprintf(stderr,
-              "Error: Program counter out of bounds: pc=%x, prog_end=%x\n",
+              "Error: Program counter out of bounds: pc=0x%04x, prog_end=0x%04x\n",
               pc, prog_len);
-      exit(1);
+      fprintf(stderr, "Stack: ");
+      display_range(mem, sp, bp);
+      exit(EXIT_POB);
     }
 
-    fprintf(stderr, "OP: %x, SP: %x, PC: %x\n", mem[pc], sp, pc);
+    if (DEBUGGING) {
+      fprintf(stderr, "OP: %04x, SP: %04x, PC: %04x\n", mem[pc], sp, pc);
+    }
+
+    /// OP SWITCH ///
     switch (mem[pc]) {
       case HALT:
         run = false;
@@ -222,31 +269,43 @@ int main() {
         mem[a] = mem[sp++];
         break;
       case ADD:
-        mem[sp+1] = mem[sp] + mem[sp+1];
+        mem[sp+1] = mem[sp+1] + mem[sp];
         sp++;
         break;
       case SUB:
-        mem[sp+1] = mem[sp] - mem[sp+1];
+        mem[sp+1] = mem[sp+1] - mem[sp];
         sp++;
         break;
       case MULT:
-        mem[sp+1] = mem[sp] * mem[sp+1];
+        mem[sp+1] = mem[sp+1] * mem[sp];
         sp++;
         break;
       case DIV:
-        mem[sp+1] = mem[sp] / mem[sp+1];
+        mem[sp+1] = (signed char)mem[sp+1] / (signed char)mem[sp];
+        sp++;
+        break;
+      case DIVU:
+        mem[sp+1] = mem[sp+1] / mem[sp];
         sp++;
         break;
       case EQ:
-        mem[sp+1] = mem[sp] == mem[sp+1];
+        mem[sp+1] = mem[sp+1] == mem[sp];
         sp++;
         break;
       case LT:
-        mem[sp+1] = mem[sp] < mem[sp+1];
+        mem[sp+1] = (signed char)mem[sp+1] < (signed char)mem[sp];
         sp++;
         break;
       case GT:
-        mem[sp+1] = mem[sp] > mem[sp+1];
+        mem[sp+1] = (signed char)mem[sp+1] > (signed char)mem[sp];
+        sp++;
+        break;
+      case LTU:
+        mem[sp+1] = mem[sp+1] < mem[sp];
+        sp++;
+        break;
+      case GTU:
+        mem[sp+1] = mem[sp+1] > mem[sp];
         sp++;
         break;
 
@@ -424,7 +483,7 @@ int main() {
         ra = pc+2;
         fp = sp;
         pc = get_address(mem, pc);
-        display_range(mem, sp, bp);
+        debug_memory(mem, sp, bp);
         continue;
       case RET:
         {
@@ -437,31 +496,30 @@ int main() {
         pc = ra;
         fp = a;
         ra = b;
-        display_range(mem, sp, bp);
+        debug_memory(mem, sp, bp);
         continue;
         }
 
       /// BAD OP CODE ///
       default:
-        //fprintf(stderr, "Error: Unknown OP code: %x\n", mem[pc]);
-        exit(1);
+        fprintf(stderr, "Error: Unknown OP code: 0x%02x\n", mem[pc]);
+        exit(EXIT_OP);
     }
     pc++;
-    display_range(mem, sp, bp);
+    debug_memory(mem, sp, bp);
   }
 
-  WORD res = mem[sp];
-  DWORD resD = get_dword(mem, sp);
-  QWORD resQ = get_qword(mem, sp);
-  fprintf(stderr, "\nmem[sp] = %x (%d), %x (%d), %x (%d)\n\n",
-          res, res, resD, resD, resQ, resQ);
+  if (DEBUGGING) {
+    WORD res = mem[sp];
+    DWORD resD = get_dword(mem, sp);
+    QWORD resQ = get_qword(mem, sp);
+    fprintf(stderr, "\nmem[sp] = 0x%02x (%d), 0x%04x (%d), 0x%08x (%d)\n\n",
+            res, res, resD, resD, resQ, resQ);
+  }
 
   // Print the stack to stdout so program results can be seen
   if (TESTING) {
-    for (size_t i = sp; i < bp; i++) {
-      printf("%x ", mem[i]);
-    }
-    printf("\n");
+    display_range(mem, sp, bp);
   }
 
   // Free the VM's memory
