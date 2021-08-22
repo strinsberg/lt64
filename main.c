@@ -83,6 +83,10 @@ enum OP{ HALT=0x00,
   EQ_Q, LT_Q, LT_QU, GT_Q, GT_QU,  // 2D
 
   JUMP, JUMP_IM, BRANCH, CALL, RET,  // 32
+  SP, FP, PC, RA,  // 36
+
+  PRINT_NUM, PRINT_STR, PRINT_RANGE,  // 39
+  READ, READ_CHAR, READ_STR,  // 3C
 };
 // need SL SR SLD SRD SLQ SRQ
 // need SL_U SR_U SL_DU SR_DU SL_QU SR_QU
@@ -499,6 +503,23 @@ int main() {
         debug_memory(mem, sp, bp);
         continue;
         }
+      case SP:
+        a = sp;
+        sp-=2;
+        set_address(mem, sp, a);
+        break;
+      case FP:
+        sp-=2;
+        set_address(mem, sp, fp);
+        break;
+      case PC:
+        sp-=2;
+        set_address(mem, sp, pc);
+        break;
+      case RA:
+        sp-=2;
+        set_address(mem, sp, ra);
+        break;
 
       /// BAD OP CODE ///
       default:
