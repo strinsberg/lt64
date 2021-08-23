@@ -71,6 +71,7 @@ const size_t EXIT_SOF = 4;
 const size_t EXIT_SUF = 5;
 const size_t EXIT_POB = 6;
 const size_t EXIT_OP = 7;
+const size_t EXIT_STR = 8;
 
 // OP codes //////////////////////////////////////////////////////////////////
 enum OP{ HALT=0x00,
@@ -91,8 +92,8 @@ enum OP{ HALT=0x00,
 
   PRINT_W, PRINT_WU, PRINT_D, PRINT_DU, PRINT_Q, PRINT_QU,  //  3C
   PRINT_CHAR, PRINT_STR,  // 3E
-  READ_W, READ_WU, READ_D, READ_DU, READ_Q, READ_QU,  //  44
-  READ_STR,  // 45
+  READ_W, READ_D, READ_Q,  //  41
+  READ_STR,  // 42
 };
 // need SL SR SLD SRD SLQ SRQ
 // need SL_U SR_U SL_DU SR_DU SL_QU SR_QU
@@ -219,6 +220,8 @@ int main() {
 
   // Execute Program
   bool run = true;
+  int i;
+  unsigned int ui;
   DWORD a, b;
   QWORD c, d;
 
@@ -554,6 +557,47 @@ int main() {
         }
         fwrite(mem + a, sizeof(char), end - a, stdout);
         break;
+
+      /// Read Numbers ///
+      case READ_W:
+        scanf("%d", &i);
+        sp -= 1;
+        mem[sp] = i;
+        break;
+      case READ_D:
+        scanf("%d", &i);
+        sp-=2;
+        set_dword(mem, sp, i);
+        break;
+      case READ_Q:
+        scanf("%d", &i);
+        sp-=4;
+        set_qword(mem, sp, i);
+        break;
+
+      /// Read Strings ///
+      case READ_STR:
+        {
+          char c; 
+          ADDR x = prog_len;
+          while (1) {
+            scanf("%c", &c);
+            if (c == '\n') {
+              mem[x++] = 0x00;
+              sp -= x - prog_len;
+              memcpy(mem + sp, mem + prog_len, (size_t)x - prog_len);
+              break;
+            } else if (x >= sp) {
+              fprintf(stderr,
+                      "Error: String read will not fit in memory: size=%u",
+                      x);
+              exit(EXIT_STR);
+            }
+            mem[x++] = c;
+          }
+        }
+        break;
+
 
       /// BAD OP CODE ///
       default:

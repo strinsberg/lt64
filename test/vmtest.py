@@ -40,3 +40,25 @@ class VmErrorTests(VmTests):
     def get_expected(self, test, proc):
         return test.expected
 
+# When initializing leave program_source=stdin
+# This class will write to the file as normal AND send test.stdin to the program
+# if the test has it.
+class VmIoTests(VmTests):
+    def execute(self):
+        for i, t in enumerate(self.tests):
+            self.write_program_input(t)
+            send = t.stdin.encode('utf-8')
+            proc = sp.run(self.command, input=send, capture_output=True)
+
+            t.error = proc.stderr.decode('utf-8')
+            passed = self.check(t, proc)
+            display_test_results(t, passed, i+1, self.show_fail_info)
+
+            if not passed:
+                self.failed.append((i+1, t))
+
+class IoTest(Test):
+    def __init__(self, name, input_, stdin, expected, show_fail_info=True):
+        super().__init__(name, input_, expected, show_fail_info=show_fail_info)
+        self.stdin = stdin
+
