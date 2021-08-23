@@ -1,5 +1,8 @@
 import subprocess as sp
 
+### Exit codes ###
+EXIT_SUCCESS = 0
+
 ### Color Codes ###
 NORMAL = "\033[0;39;49m"
 RED = "\033[1;31;49m"
@@ -27,11 +30,13 @@ def display_test_results(test, passed, num, show_fail_info=True):
         print(f"[{RED}FAIL{NORMAL}]")
         if show_fail_info and test.show_fail_info:
             if test.error:
-                print(f"    {YELLOW}{test.error}{NORMAL}",
+                print(f"{YELLOW}{test.error}{NORMAL}",
                       end="")
+                print(f"Exit Code: {test.exit_code}")
                 print()
-            print(f"    {GREEN}EXPECTED{NORMAL}: {test.expected}")
-            print(f"    {RED}ACTUAL{NORMAL}:   {test.actual}")
+            print(f"{GREEN}EXPECTED{NORMAL}: {test.expected}")
+            print(f"{RED}ACTUAL{NORMAL}:   {test.actual}")
+            print()
 
 def compile_program(command_list):
     command = " ".join(command_list)
@@ -125,7 +130,8 @@ class TestSuite:
     def check(self, test, proc):
         actual = self.get_actual(test, proc)
         expected = self.get_expected(test, proc)
-        return actual == expected
+        test.exit_code = proc.returncode
+        return actual == expected and test.exit_code == EXIT_SUCCESS
 
     def get_actual(self, test, proc):
         if self.program_output != "stdout":
@@ -151,4 +157,5 @@ class Test:
         self.show_fail_info = show_fail_info
         self.actual = None
         self.stderr = None
+        self.exit_code = EXIT_SUCCESS
 

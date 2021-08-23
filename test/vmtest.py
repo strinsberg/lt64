@@ -28,6 +28,11 @@ class VmTests(TestSuite):
             f.write(data)
 
 class VmErrorTests(VmTests):
+    def check(self, test, proc):
+        actual = self.get_actual(test, proc)
+        expected = self.get_expected(test, proc)
+        return actual == expected
+
     def get_actual(self, test, proc):
         test.actual = proc.returncode
         return proc.returncode

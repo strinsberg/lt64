@@ -17,7 +17,6 @@ tests = [
         "01 aa 33 01 bb 33 00",
         "ff f8 bb ff fb aa"
     ),
-    # Need more complex FP with a function call or two
     Test(
         "It pushes FP",
         "34 00",
@@ -28,7 +27,6 @@ tests = [
         "35 01 aa 01 bb 35 00",
         "00 05 bb aa 00 00"
     ),
-    # Need more complex RA with a function call or two
     Test(
         "It pushes RA",
         "36 00",

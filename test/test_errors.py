@@ -15,7 +15,12 @@ tests = [
     ),
     Test(
         "Stack underflow from POP",
-        "01 aa 20",
+        "01 aa 20 00",
+        vmtest.EXIT_SUF
+    ),
+    Test(
+        "Stack underflow from word POP",
+        "01 aa 01 aa 01 aa 02 02 02 02 02 02 00",
         vmtest.EXIT_SUF
     ),
     Test(

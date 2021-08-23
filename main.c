@@ -51,6 +51,7 @@
 // know the address when writing the program or you might get one at runtime. I.e.
 // passing a reference to a procedure.
 
+// Types //
 typedef unsigned char BYTE;
 typedef unsigned short ADDR;
 
@@ -58,8 +59,11 @@ typedef unsigned char WORD;
 typedef unsigned short DWORD;
 typedef unsigned int QWORD;
 
-// Exit codes //
+typedef signed char SWORD;
+typedef signed short SDWORD;
+typedef signed int SQWORD;
 
+// Exit codes //
 const size_t EXIT_MEM = 1;
 const size_t EXIT_LEN = 2;
 const size_t EXIT_FILE = 3;
@@ -85,20 +89,14 @@ enum OP{ HALT=0x00,
   JUMP, JUMP_IM, BRANCH, CALL, RET,  // 32
   SP, FP, PC, RA,  // 36
 
-  PRINT_NUM, PRINT_STR, PRINT_RANGE,  // 39
-  READ, READ_CHAR, READ_STR,  // 3C
+  PRINT_W, PRINT_WU, PRINT_D, PRINT_DU, PRINT_Q, PRINT_QU,  //  3C
+  PRINT_CHAR, PRINT_STR,  // 3E
+  READ_W, READ_WU, READ_D, READ_DU, READ_Q, READ_QU,  //  44
+  READ_STR,  // 45
 };
 // need SL SR SLD SRD SLQ SRQ
 // need SL_U SR_U SL_DU SR_DU SL_QU SR_QU
 // need NOT AND OR XOR
-// need SP FP PC RA
-// need PRINT_NUM PRINT_STR PRINT_RANGE
-// num takes args to tell it how much to print and the sign
-// str prints chars from a given address until a 00 is found
-// range prints from one address to another
-// need READ READ_STR
-// read takes an arg to tell it what to read, chars and words can be the same
-// str will get a line and copy it onto the stack with a 00 at the end
 
 // Memory ////////////////////////////////////////////////////////////////////
 const ADDR P_START = 0x00;
@@ -205,7 +203,7 @@ int main() {
   mem[bp] = 0xaa;
   mem[bp+1] = 0xbb;
   mem[bp+2] = 0xcc;
-  mem[bp+3] = 0xdd;
+  mem[bp+3] = 0x00;
 
   // Debug info
   if (DEBUGGING) {
@@ -229,6 +227,7 @@ int main() {
       fprintf(stderr, "Error: Stack Underflow: sp=0x%04x, bp=0x%04x\n", sp, bp);
       fprintf(stderr, "Stack: ");
       display_range(mem, sp, bp);
+      fprintf(stderr, "\n");
       exit(EXIT_SUF);
     } else if (sp <= prog_len) {
       fprintf(stderr, "Error: Stack Overflow: sp=0x%04x, prog_end=0x%04x\n",
@@ -240,6 +239,7 @@ int main() {
               pc, prog_len);
       fprintf(stderr, "Stack: ");
       display_range(mem, sp, bp);
+      fprintf(stderr, "\n");
       exit(EXIT_POB);
     }
 
@@ -519,6 +519,40 @@ int main() {
       case RA:
         sp-=2;
         set_address(mem, sp, ra);
+        break;
+
+      /// Print Numbers ///
+      case PRINT_W:
+        printf("%d", (SWORD)mem[sp]);
+        break;
+      case PRINT_WU:
+        printf("%u", mem[sp]);
+        break;
+      case PRINT_D:
+        printf("%d", (SDWORD)get_dword(mem, sp));
+        break;
+      case PRINT_DU:
+        printf("%u", get_dword(mem, sp));
+        break;
+      case PRINT_Q:
+        printf("%d", (SQWORD)get_qword(mem, sp));
+        break;
+      case PRINT_QU:
+        printf("%u", get_qword(mem, sp));
+        break;
+
+      /// Print Chars and Strings ///
+      case PRINT_CHAR:
+        printf("%c", mem[sp]);
+        break;
+      case PRINT_STR:
+        a = get_dword(mem, sp);
+        sp += 2;
+        ADDR end = a;
+        while (mem[end] != 0) {
+          end++;
+        }
+        fwrite(mem + a, sizeof(char), end - a, stdout);
         break;
 
       /// BAD OP CODE ///
