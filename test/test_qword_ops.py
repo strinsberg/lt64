@@ -15,6 +15,18 @@ tests = [
         "bb bb bb ee aa aa aa ff"
     ),
 
+    ### Storage ###
+    Test(
+        "Load a qword from the bottom of the stack.",
+        "1F aa bb aa bb 1F cc dd cc dd 10 ff f8 22 00",
+        "aa bb aa bb cc dd cc dd aa bb aa bb"
+    ),
+    Test(
+        "Store a qword on the bottom of the stack.",
+        "1F aa bb aa bb 1F cc dd cc dd 1F ee ff ee ff 10 ff f8 23 00",
+        "cc dd cc dd ee ff ee ff"
+    ),
+
     ### Addition ###
     Test(
         "Add positive QWORD",

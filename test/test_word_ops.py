@@ -14,6 +14,18 @@ tests = [
         "bb aa"
     ),
 
+    ### Storage ###
+    Test(
+        "Load a word from the bottom of the stack.",
+        "01 aa 01 bb 10 ff fb 04 00",
+        "aa bb aa"
+    ),
+    Test(
+        "Store a word on the bottom of the stack.",
+        "01 aa 01 bb 01 cc 10 ff fb 05 00",
+        "bb cc"
+    ),
+
     ### Addition ###
     Test(
         "Add positive WORDs",

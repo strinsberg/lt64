@@ -14,6 +14,18 @@ tests = [
         "bb ff aa ee"
     ),
 
+    ### Storage ###
+    Test(
+        "Load a dword from the bottom of the stack.",
+        "10 aa bb 10 cc dd 10 ff fa 13 00",
+        "aa bb cc dd aa bb"
+    ),
+    Test(
+        "Store a dword on the bottom of the stack.",
+        "10 aa bb 10 cc dd 10 ee ff 10 ff fa 14 00",
+        "cc dd ee ff"
+    ),
+
     ### Addition ###
     Test(
         "Add positive DWORDs",
