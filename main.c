@@ -102,7 +102,8 @@ enum OP{ HALT=0x00,
   NOT, NOTD, NOTQ,  // 51
 };
 
-// Memory ////////////////////////////////////////////////////////////////////
+// Simple Memory /////////////////////////////////////////////////////////////
+const ADDR NIL = 0xffff;
 const ADDR P_START = 0x00;
 const ADDR LAST_ADDR = 0xffff;
 const BYTE WORD_SIZE = 8;
@@ -137,6 +138,67 @@ static inline void set_qword(WORD* mem, ADDR addr, QWORD data) {
   mem[addr+1] = data >> WORD_SIZE * 2;
   mem[addr+2] = data >> WORD_SIZE;
   mem[addr+3] = (WORD)data;
+}
+
+// Dynamic Memory ////////////////////////////////////////////////////////////
+typedef struct Block Block;
+
+struct Block {
+  bool is_free;
+  size_t size;
+  ADDR address;
+  Block* next;
+  Block* prev;
+};
+
+// Could do some tracking of free blocks to make it possible to skip
+// used blocks in the search. The free pointers would have to be updated
+// when free is used.
+
+ADDR find_available(size_t size, Block* heap, Block* top) {
+  // Starting from the beginning look for an unused block that will fit
+  // If a found block is too big split it and make a block the right size
+  // If a found block is too small see if we can combine some unused adjacent
+  // blocks.
+  // If we find something that will work return the ADDR of the start of the
+  // memory chunk
+  // Otherwise return NIL ADDR
+  return NIL;
+}
+
+ADDR request_new(size_t size, Block* top, ADDR* brk, ADDR sp) {
+  // Temp add the size to the brk ADDR
+  // If it will cross sp then return NIL
+  // Otherwise create a new block and connect it to top
+  // Set the size and make it's memory point to the brk ADDR
+  // Move the brk address by size words
+  // Set top to point to the new block and return the blocks ADDR
+  return NIL;
+}
+
+ADDR allocate(size_t size, Block* heap, Block* top, ADDR* brk, ADDR sp) {
+  // Find if there is a free block that will fit
+  ADDR start;
+  start = find_available(size, heap, top);
+
+  // If no open block was found add a new one
+  if (start == NIL) {
+    start = request_new(size, top, brk, sp);
+  }
+  
+  // If we still can't make space for it throw an error
+  // We could return 0 and let the caller decide what to do if they don't get
+  // memory, but for now just crash.
+  if (start == NIL) {
+    fprintf(stderr, "Error: Not enough memory for requested allocation.");
+  }
+  return start;
+}
+
+void free_block(ADDR start, Block* heap) {
+  // find the block with the given address on the heap
+  // set that blocks is_free to true
+  // If free pointers are implemented then update them
 }
 
 // I/O ///////////////////////////////////////////////////////////////////////
@@ -182,8 +244,10 @@ void debug_memory(WORD* mem, ADDR start, ADDR end) {
 // Main //////////////////////////////////////////////////////////////////////
 int main() {
   // Some variables we need
-  ADDR sp, bp, pc, ra, fp, prog_len;
+  ADDR sp, bp, pc, ra, fp, prog_len, brk;
   WORD* mem;
+  Block* heap = NULL;  // make an init to but a free empty block on the top
+  Block* top = heap;
 
   // Allocate memory for the VM
   mem = (WORD*) calloc((size_t)LAST_ADDR + 1, sizeof(BYTE));
@@ -198,6 +262,7 @@ int main() {
 
   // Set up the address variables
   pc = P_START;
+  brk = prog_len;
   ra = pc;
   bp = LAST_ADDR - 3;
   fp = bp;
