@@ -9,6 +9,25 @@ tests = [
         "01 aa 10 00 08 2E 01 bb 01 cc 00",
         "cc aa"
     ),
+    Test(
+        "It jump some pushes with an immediate address",
+        "01 aa 2F 00 07 01 bb 01 cc 00",
+        "cc aa"
+    ),
+
+    ### Branching ###
+    Test(
+        "It branches on true value",
+        "01 01 30 00 09 01 aa 01 bb 01 cc 00",
+        "cc"
+    ),
+    Test(
+        "It continues on false value",
+        "01 00 30 00 09 01 aa 01 bb 01 cc 00",
+        "cc bb aa"
+    ),
+
+    ### Call and Ret ###
 
     ### Push Special Addresses ###
     # BP = fffc
