@@ -681,23 +681,36 @@ int main() {
 
       /// Read Strings ///
       case READ_STR:
+        // might be good to have a function for this or at least for the
+        // first if case.
         {
           char c; 
-          ADDR x = prog_len;
+          ADDR x = sp;
+
           while (1) {
             scanf("%c", &c);
             if (c == '\n') {
-              mem[x++] = 0x00;
-              sp -= x - prog_len;
-              memcpy(mem + sp, mem + prog_len, (size_t)x - prog_len);
+              mem[--x] = 0x00;
+
+              // string is read in backwards so we reverse it
+              size_t i = 0;
+              while (x+i < sp-i-1) {
+                c = mem[x+i];
+                mem[x+i] = mem[sp-i-1];
+                mem[sp-i-1] = c;
+                i++;
+              }
+
+              sp = x;
               break;
-            } else if (x >= sp) {
+
+            } else if (x <= brk) {
               fprintf(stderr,
-                      "Error: String read will not fit in memory: size=%u",
+                      "Error: String read will not fit in memory: size=%u\n",
                       x);
               exit(EXIT_STR);
             }
-            mem[x++] = c;
+            mem[--x] = c;
           }
         }
         break;

@@ -119,10 +119,15 @@ read_tests = [
 ]
 
 if __name__=='__main__':
-    vmtest.VmTests("It handles I/O operations",
+    vmtest.VmTests("It handles print operations",
                    vmtest.TEST_NAME,
                    tests=tests,
                    program_source=vmtest.INPUT_FILE,
                    compile_command=vmtest.COMPILE_FOR_TESTS).run()
+    vmtest.VmIoTests("It handles read operations",
+                      vmtest.TEST_NAME,
+                      tests=read_tests,
+                      program_source=vmtest.INPUT_FILE,
+                      compile_command=vmtest.COMPILE_FOR_TESTS).run()
 
 
