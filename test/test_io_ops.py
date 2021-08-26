@@ -116,8 +116,6 @@ read_tests = [
          "Steve\n",
          "Steve"
     ),
-
-
 ]
 
 if __name__=='__main__':

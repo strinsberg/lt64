@@ -20,7 +20,8 @@
 // NOTE new OP codes must be added at the end of the enum. The testing program
 // will be broken if they are inserted in the middle.
 
-// TODO Add system calls, really just C calls. Maybe just a print for now.
+// TODO Finish implementing all of the unsigned operations for dword and qword
+// and write tests for them.
 // TODO setup an assembler (can use a different langauge). Needs to keep good
 // track of sp,pc,ra,fp in order to allow referencing thier values at a given
 // time in execution. This should probably already be done for some things like
@@ -90,14 +91,16 @@ enum OP{ HALT=0x00,
   JUMP, JUMP_IM, BRANCH, CALL, RET,  // 32
   SP, FP, PC, RA,  // 36
 
-  PRINT_W, PRINT_WU, PRINT_D, PRINT_DU, PRINT_Q, PRINT_QU,  //  3C
+  PRINT, PRINT_U, PRINT_D, PRINT_DU, PRINT_Q, PRINT_QU,  //  3C
   PRINT_CHAR, PRINT_STR,  // 3E
-  READ_W, READ_D, READ_Q,  //  41
+  READ, READ_D, READ_Q,  //  41
   READ_STR,  // 42
+
+  SL, SR, SLD, SRD, SLQ, SRQ,  // 48
+  AND, ANDD, ANDQ,  // 4B
+  OR, ORD, ORQ,  // 4E
+  NOT, NOTD, NOTQ,  // 51
 };
-// need SL SR SLD SRD SLQ SRQ
-// need SL_U SR_U SL_DU SR_DU SL_QU SR_QU
-// need NOT AND OR XOR
 
 // Memory ////////////////////////////////////////////////////////////////////
 const ADDR P_START = 0x00;
@@ -347,25 +350,32 @@ int main() {
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
         sp+=2;
-        set_dword(mem, sp, a + b);
+        set_dword(mem, sp, b + a);
         break;
       case SUB_D:
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
         sp+=2;
-        set_dword(mem, sp, a - b);
+        set_dword(mem, sp, b - a);
         break;
       case MULT_D:
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
         sp+=2;
-        set_dword(mem, sp, a * b);
+        set_dword(mem, sp, b * a);
         break;
       case DIV_D:
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
         sp+=2;
-        set_dword(mem, sp, a / b);
+        set_dword(mem, sp, (SDWORD)b / (SDWORD)a);
+        break;
+      case DIV_DU:
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=2;
+        set_dword(mem, sp, b / a);
+        break;
         break;
       case EQ_D:
         a = get_dword(mem, sp);
@@ -377,13 +387,27 @@ int main() {
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
         sp+=3;
-        mem[sp] = a < b;
+        mem[sp] = (SDWORD)b < (SDWORD)a;
         break;
       case GT_D:
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
         sp+=3;
-        mem[sp] = a > b;
+        mem[sp] = (SDWORD)b > (SDWORD)a;
+        break;
+      case LT_DU:
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=3;
+        mem[sp] = b < a;
+        break;
+        break;
+      case GT_DU:
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=3;
+        mem[sp] = b > a;
+        break;
         break;
 
       /// QUAD WORDS ///
@@ -446,6 +470,8 @@ int main() {
         sp+=4;
         set_qword(mem, sp, c * d);
         break;
+      case DIV_QU:
+        break;
       case EQ_Q:
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
@@ -463,6 +489,10 @@ int main() {
         d = get_qword(mem, sp+4);
         sp+=7;
         mem[sp] = c > d;
+        break;
+      case LT_QU:
+        break;
+      case GT_QU:
         break;
 
       /// JUMPS ///
@@ -525,10 +555,10 @@ int main() {
         break;
 
       /// Print Numbers ///
-      case PRINT_W:
+      case PRINT:
         printf("%d", (SWORD)mem[sp]);
         break;
-      case PRINT_WU:
+      case PRINT_U:
         printf("%u", mem[sp]);
         break;
       case PRINT_D:
@@ -559,7 +589,7 @@ int main() {
         break;
 
       /// Read Numbers ///
-      case READ_W:
+      case READ:
         scanf("%d", &i);
         sp -= 1;
         mem[sp] = i;
@@ -598,6 +628,39 @@ int main() {
         }
         break;
 
+      /// SHIFTS ///
+      case SL:
+        break;
+      case SR:
+        break;
+      case SLD:
+        break;
+      case SRD:
+        break;
+      case SLQ:
+        break;
+      case SRQ:
+        break;
+      
+      /// LOGICAL (BITWISE) ///
+      case AND:
+        break;
+      case ANDD:
+        break;
+      case ANDQ:
+        break;
+      case OR:
+        break;
+      case ORD:
+        break;
+      case ORQ:
+        break;
+      case NOT:
+        break;
+      case NOTD:
+        break;
+      case NOTQ:
+        break;
 
       /// BAD OP CODE ///
       default:

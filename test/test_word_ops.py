@@ -29,8 +29,8 @@ tests = [
     ### Subtract ###
     Test(
         "Subract positive WORDs",
-        "01 08 01 07 07 00",
-        "01"
+        "01 07 01 08 07 00",
+        "ff"
     ),
     Test(
         "Subract positive and negative WORDs",  # ff is -1

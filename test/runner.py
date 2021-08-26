@@ -8,7 +8,7 @@ import test_io_ops as io
 import test_errors as errors
 import sys
 
-def make_vm_suite(name, tests):
+def make_vm_suite(name, tests, prog_name):
     return vmtest.VmTests(name,
                           prog_name,
                           tests=tests,
@@ -24,11 +24,11 @@ else:
 
 
 suites = [
-    make_vm_suite("It handles word ops", word.tests),
-    make_vm_suite("It handles dword ops", dword.tests),
-    make_vm_suite("It handles qword ops", qword.tests),
-    make_vm_suite("It handles movement ops", move.tests),
-    make_vm_suite("It handles print ops", io.tests),
+    make_vm_suite("It handles word ops", word.tests, prog_name),
+    make_vm_suite("It handles dword ops", dword.tests, prog_name),
+    make_vm_suite("It handles qword ops", qword.tests, prog_name),
+    make_vm_suite("It handles movement ops", move.tests, prog_name),
+    make_vm_suite("It handles print ops", io.tests, prog_name),
     vmtest.VmIoTests("It handles io ops",
                         prog_name,
                         tests=io.read_tests,
