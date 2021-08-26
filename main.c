@@ -376,7 +376,6 @@ int main() {
         sp+=2;
         set_dword(mem, sp, b / a);
         break;
-        break;
       case EQ_D:
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
@@ -401,13 +400,11 @@ int main() {
         sp+=3;
         mem[sp] = b < a;
         break;
-        break;
       case GT_DU:
         a = get_dword(mem, sp);
         b = get_dword(mem, sp+2);
         sp+=3;
         mem[sp] = b > a;
-        break;
         break;
 
       /// QUAD WORDS ///
@@ -450,27 +447,31 @@ int main() {
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
         sp+=4;
-        set_qword(mem, sp, c + d);
+        set_qword(mem, sp, d + c);
         break;
       case SUB_Q:
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
         sp+=4;
-        set_qword(mem, sp, c - d);
+        set_qword(mem, sp, d - c);
         break;
       case MULT_Q:
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
         sp+=4;
-        set_qword(mem, sp, c * d);
+        set_qword(mem, sp, d * c);
         break;
       case DIV_Q:
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
         sp+=4;
-        set_qword(mem, sp, c * d);
+        set_qword(mem, sp, (SQWORD)d / (SQWORD)c);
         break;
       case DIV_QU:
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, d / c);
         break;
       case EQ_Q:
         c = get_qword(mem, sp);
@@ -482,17 +483,25 @@ int main() {
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
         sp+=7;
-        mem[sp] = c < d;
+        mem[sp] = (SQWORD)d < (SQWORD)c;
         break;
       case GT_Q:
         c = get_qword(mem, sp);
         d = get_qword(mem, sp+4);
         sp+=7;
-        mem[sp] = c > d;
+        mem[sp] = (SQWORD)d > (SQWORD)c;
         break;
       case LT_QU:
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=7;
+        mem[sp] = d < c;
         break;
       case GT_QU:
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=7;
+        mem[sp] = d > c;
         break;
 
       /// JUMPS ///
