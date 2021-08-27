@@ -28,6 +28,12 @@ tests = [
     ),
 
     ### Call and Ret ###
+    # Look over the possibilities
+    # test that args are passed properly
+    # return values are moved properly
+    # local variables are removed after a function returns
+    # local variables in the calling scope should not be removed if they are
+    # not parameters
 
     ### Push Special Addresses ###
     # BP = fffc

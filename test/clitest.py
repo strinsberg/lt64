@@ -14,11 +14,13 @@ def display_totals(failed, total, reprint_failed=True, show_fail_info=True):
     print()
     print()
     if len(failed):
-        print(f"{RED}****{NORMAL} Failed Tests {RED}****{NORMAL}")
+        print(f"{RED}****{NORMAL} Failed Test Results {RED}****{NORMAL}")
         print()
         if reprint_failed:
             for i, t in failed:
                 display_test_results(t, False, i, show_fail_info)
+        print(f"{YELLOW}Tests Failed{NORMAL}: {len(failed)}")
+        print()
     else:
         print(f"{GREEN}****{NORMAL} {total} Tests Passed {GREEN}****{NORMAL}")
 
