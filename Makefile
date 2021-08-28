@@ -5,7 +5,7 @@ CC_DEBUG_FLAGS= -o lt64-debug -Og -D DEBUG
 %.o: %.cpp
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-lt64: main.c
+release: main.c
 	$(CC) main.c $(CC_FLAGS)
 
 debug: main.c
