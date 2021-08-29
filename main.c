@@ -4,12 +4,11 @@
 #include "string.h"
 
 #ifdef TEST
-  const char* INPUT_FILE = "test.vm";
   const bool TESTING = true;
 #else
-  const char* INPUT_FILE = "input.vm";
   const bool TESTING = false;
 #endif
+const char* TEST_FILE = "test.vm";
 
 #ifdef DEBUG
   const bool DEBUGGING = true;
@@ -107,7 +106,6 @@
         BIN_Q_START(a,b); \
         sp+=3; \
         mem[sp] = ((SQWORD)(b) op (SQWORD)(a))
-;
 
 // Types //
 typedef unsigned char BYTE;
@@ -131,6 +129,7 @@ const size_t EXIT_SUF = 5;
 const size_t EXIT_POB = 6;
 const size_t EXIT_OP = 7;
 const size_t EXIT_STR = 8;
+const size_t EXIT_ARGS = 9;
 
 // OP codes //////////////////////////////////////////////////////////////////
 enum OP{ HALT=0x00,
@@ -209,6 +208,10 @@ static inline void set_qword(WORD* mem, ADDR addr, QWORD data) {
 // I/O ///////////////////////////////////////////////////////////////////////
 size_t read_program(WORD* mem, const char* filename) {
   FILE* fptr = fopen(filename, "rb");
+  if (fptr == NULL) {
+    fprintf(stderr, "Error: Input file could not be open: %s\n", filename);
+    exit(EXIT_FILE);
+  }
 
   fseek(fptr, 0, SEEK_END);
   size_t prog_len = (size_t) ftell(fptr);
@@ -247,7 +250,7 @@ void debug_memory(WORD* mem, ADDR start, ADDR end) {
 }
 
 // Main //////////////////////////////////////////////////////////////////////
-int main() {
+int main( int argc, char *argv[] ) {
   // Some variables we need
   ADDR sp, bp, pc, ra, fp, prog_len, brk;
   WORD* mem;
@@ -260,8 +263,16 @@ int main() {
   }
 
   // Read the program file as bytes into memory starting at PSTART
-  // TODO use an argument for the program filename
-  prog_len = (ADDR)read_program(mem, INPUT_FILE);
+  if (TESTING) {
+    prog_len = (ADDR)read_program(mem, TEST_FILE);
+  } else if (argc >= 2) {
+    prog_len = (ADDR)read_program(mem, argv[1]);
+  } else {
+    fprintf(stderr, "Error: File name missing\n");
+    fprintf(stderr, "Usage: lt64 <input file name>\n");
+    exit(EXIT_ARGS);
+  }
+
 
   // Set up the address variables
   pc = P_START;
