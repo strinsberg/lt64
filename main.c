@@ -16,17 +16,18 @@
 #else
   const bool DEBUGGING = false;
 #endif
-  
-// NOTE new OP codes must be added at the end of the enum. The testing program
-// will be broken if they are inserted in the middle.
 
+// TODO setup the program to take a filename as an argument
 // TODO setup an assembler (can use a different langauge).
 // TODO Add some support for floating point numbers. Can this be done just by
 // converting them into a byte/int form on read/assemble and printing them? I
 // know it is possible to implement fixed precision floating points where there are
 // always x bits before the decimal and y bits after. This might be a good options
 // as they can probably easily be represented the way I am currently.
-//
+  
+// NOTE new OP codes must be added at the end of the enum. The testing program
+// will be broken if they are inserted in the middle.
+
 // NOTE PUSH, GET, CALL, and RET are all operations that must be given arguments
 // in the program because the nature of these instructions is that these values
 // will never be dynamic. If you want to push a value you will need to know
@@ -37,9 +38,73 @@
 // of arguments that you will pass and return when calling or writing the
 // procedure.
 // All other instructions can operate on data they know nothing about so it must
-// be pushed to the stack for them to get. Or like load and store you might
-// know the address when writing the program or you might get one at runtime. I.e.
-// passing a reference to a procedure.
+// be pushed or loaded onto the stack for them to get.
+
+// Macros //
+#define OP_ADD +
+#define OP_SUB -
+#define OP_TIMES *
+#define OP_DIV /
+#define OP_BIT_AND &
+#define OP_BIT_OR |
+#define OP_EQ ==
+#define OP_GT >
+#define OP_LT <
+
+// Word operations
+#define BIN_WU_OP(op) \
+        mem[sp+1] = mem[sp+1] op mem[sp]; \
+        sp++
+
+#define BIN_W_OP(op) \
+        mem[sp+1] = (SWORD)mem[sp+1] op (SWORD)mem[sp]; \
+        sp++
+
+// DWord operations
+#define BIN_D_START(a,b) \
+        (a) = get_dword(mem, sp); \
+        (b) = get_dword(mem, sp+2); \
+        sp+=2
+
+#define BIN_DU_OP(op, a, b) \
+        BIN_D_START(a,b); \
+        set_dword(mem, sp, ((b) op (a)))
+
+#define BIN_D_OP(op, a, b) \
+        BIN_D_START(a,b); \
+        set_dword(mem, sp, ((SDWORD)(b) op (SDWORD)(a)))
+
+#define BIN_DU_COMP(op, a, b) \
+        BIN_D_START(a,b); \
+        mem[++sp] = ((b) op (a))
+
+#define BIN_D_COMP(op, a, b) \
+        BIN_D_START(a,b); \
+        mem[++sp] = ((SDWORD)(b) op (SDWORD)(a))
+        
+// QWord operations
+#define BIN_Q_START(a,b) \
+        (a) = get_qword(mem, sp); \
+        (b) = get_qword(mem, sp+4); \
+        sp+=4
+
+#define BIN_QU_OP(op, a, b) \
+        BIN_Q_START(a,b); \
+        set_qword(mem, sp, ((b) op (a)))
+
+#define BIN_Q_OP(op, a, b) \
+        BIN_Q_START(a,b); \
+        set_qword(mem, sp, ((SQWORD)(b) op (SQWORD)(a)))
+
+#define BIN_QU_COMP(op, a, b) \
+        BIN_Q_START(a,b); \
+        sp+=3; \
+        mem[sp] = ((b) op (a))
+
+#define BIN_Q_COMP(op, a, b) \
+        BIN_Q_START(a,b); \
+        sp+=3; \
+        mem[sp] = ((SQWORD)(b) op (SQWORD)(a))
 
 // Types //
 typedef unsigned char BYTE;
@@ -222,6 +287,7 @@ int main() {
   QWORD c, d;
 
   while (run) {
+    /// Error Checking ///
     if (sp > bp) {
       fprintf(stderr, "Error: Stack Underflow: sp=0x%04x, bp=0x%04x\n", sp, bp);
       fprintf(stderr, "Stack: ");
@@ -272,44 +338,34 @@ int main() {
         mem[a] = mem[sp++];
         break;
       case ADD:
-        mem[sp+1] = mem[sp+1] + mem[sp];
-        sp++;
+        BIN_WU_OP(OP_ADD);
         break;
       case SUB:
-        mem[sp+1] = mem[sp+1] - mem[sp];
-        sp++;
+        BIN_WU_OP(OP_SUB);
         break;
       case MULT:
-        mem[sp+1] = mem[sp+1] * mem[sp];
-        sp++;
+        BIN_WU_OP(OP_TIMES);
         break;
       case DIV:
-        mem[sp+1] = (signed char)mem[sp+1] / (signed char)mem[sp];
-        sp++;
+        BIN_W_OP(OP_DIV);
         break;
       case DIVU:
-        mem[sp+1] = mem[sp+1] / mem[sp];
-        sp++;
+        BIN_WU_OP(OP_DIV);
         break;
       case EQ:
-        mem[sp+1] = mem[sp+1] == mem[sp];
-        sp++;
+        BIN_WU_OP(OP_EQ);
         break;
       case LT:
-        mem[sp+1] = (signed char)mem[sp+1] < (signed char)mem[sp];
-        sp++;
+        BIN_W_OP(OP_LT);
         break;
       case GT:
-        mem[sp+1] = (signed char)mem[sp+1] > (signed char)mem[sp];
-        sp++;
+        BIN_W_OP(OP_GT);
         break;
       case LTU:
-        mem[sp+1] = mem[sp+1] < mem[sp];
-        sp++;
+        BIN_WU_OP(OP_LT);
         break;
       case GTU:
-        mem[sp+1] = mem[sp+1] > mem[sp];
-        sp++;
+        BIN_WU_OP(OP_GT);
         break;
 
       /// DOUBLE WORDS ///
@@ -340,64 +396,34 @@ int main() {
         sp+=2;
         break;
       case ADD_D:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=2;
-        set_dword(mem, sp, b + a);
+        BIN_DU_OP(OP_ADD, a, b);
         break;
       case SUB_D:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=2;
-        set_dword(mem, sp, b - a);
+        BIN_DU_OP(OP_SUB, a, b);
         break;
       case MULT_D:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=2;
-        set_dword(mem, sp, b * a);
+        BIN_DU_OP(OP_TIMES, a, b);
         break;
       case DIV_D:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=2;
-        set_dword(mem, sp, (SDWORD)b / (SDWORD)a);
+        BIN_D_OP(OP_DIV, a, b);
         break;
       case DIV_DU:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=2;
-        set_dword(mem, sp, b / a);
+        BIN_DU_OP(OP_DIV, a, b);
         break;
       case EQ_D:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=3;
-        mem[sp] = a == b;
+        BIN_DU_COMP(OP_EQ, a, b);
         break;
       case LT_D:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=3;
-        mem[sp] = (SDWORD)b < (SDWORD)a;
+        BIN_D_COMP(OP_LT, a, b);
         break;
       case GT_D:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=3;
-        mem[sp] = (SDWORD)b > (SDWORD)a;
+        BIN_D_COMP(OP_GT, a, b);
         break;
       case LT_DU:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=3;
-        mem[sp] = b < a;
+        BIN_DU_COMP(OP_LT, a, b);
         break;
       case GT_DU:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=3;
-        mem[sp] = b > a;
+        BIN_DU_COMP(OP_GT, a, b);
         break;
 
       /// QUAD WORDS ///
@@ -437,64 +463,34 @@ int main() {
         sp+=4;
         break;
       case ADD_Q:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=4;
-        set_qword(mem, sp, d + c);
+        BIN_QU_OP(OP_ADD, c, d);
         break;
       case SUB_Q:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=4;
-        set_qword(mem, sp, d - c);
+        BIN_QU_OP(OP_SUB, c, d);
         break;
       case MULT_Q:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=4;
-        set_qword(mem, sp, d * c);
+        BIN_QU_OP(OP_TIMES, c, d);
         break;
       case DIV_Q:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=4;
-        set_qword(mem, sp, (SQWORD)d / (SQWORD)c);
+        BIN_Q_OP(OP_DIV, c, d);
         break;
       case DIV_QU:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=4;
-        set_qword(mem, sp, d / c);
+        BIN_QU_OP(OP_DIV, c, d);
         break;
       case EQ_Q:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=7;
-        mem[sp] = c == d;
+        BIN_Q_COMP(OP_EQ, c, d);
         break;
       case LT_Q:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=7;
-        mem[sp] = (SQWORD)d < (SQWORD)c;
+        BIN_Q_COMP(OP_LT, c, d);
         break;
       case GT_Q:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=7;
-        mem[sp] = (SQWORD)d > (SQWORD)c;
+        BIN_Q_COMP(OP_GT, c, d);
         break;
       case LT_QU:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=7;
-        mem[sp] = d < c;
+        BIN_QU_COMP(OP_LT, c, d);
         break;
       case GT_QU:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=7;
-        mem[sp] = d > c;
+        BIN_QU_COMP(OP_GT, c, d);
         break;
 
       /// JUMPS ///
@@ -679,36 +675,22 @@ int main() {
       
       /// LOGICAL (BITWISE) ///
       case AND:
-        mem[sp+1] = mem[sp+1] & mem[sp];
-        sp++;
+        BIN_WU_OP(OP_BIT_AND);
         break;
       case ANDD:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=2;
-        set_dword(mem, sp, b & a);
+        BIN_DU_OP(OP_BIT_AND, a, b);
         break;
       case ANDQ:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=4;
-        set_qword(mem, sp, d & c);
+        BIN_QU_OP(OP_BIT_AND, c, d);
         break;
       case OR:
-        mem[sp+1] = mem[sp+1] | mem[sp];
-        sp++;
+        BIN_WU_OP(OP_BIT_OR);
         break;
       case ORD:
-        a = get_dword(mem, sp);
-        b = get_dword(mem, sp+2);
-        sp+=2;
-        set_dword(mem, sp, b | a);
+        BIN_DU_OP(OP_BIT_OR, a, b);
         break;
       case ORQ:
-        c = get_qword(mem, sp);
-        d = get_qword(mem, sp+4);
-        sp+=4;
-        set_qword(mem, sp, d | c);
+        BIN_QU_OP(OP_BIT_OR, c, d);
         break;
       case NOT:
         mem[sp] = ~mem[sp];
