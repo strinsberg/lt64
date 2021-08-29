@@ -721,16 +721,32 @@ int main() {
 
       /// SHIFTS ///
       case SL:
+        pc++;
+        mem[sp] = mem[sp] << mem[pc];
         break;
       case SR:
+        pc++;
+        mem[sp] = mem[sp] >> mem[pc];
         break;
       case SLD:
+        pc++;
+        a = get_dword(mem, sp) << mem[pc];
+        set_dword(mem, sp, a);
         break;
       case SRD:
+        pc++;
+        a = get_dword(mem, sp) >> mem[pc];
+        set_dword(mem, sp, a);
         break;
       case SLQ:
+        pc++;
+        c = get_qword(mem, sp) << mem[pc];
+        set_qword(mem, sp, c);
         break;
       case SRQ:
+        pc++;
+        c = get_qword(mem, sp) >> mem[pc];
+        set_qword(mem, sp, c);
         break;
       
       /// LOGICAL (BITWISE) ///
