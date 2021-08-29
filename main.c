@@ -751,22 +751,47 @@ int main() {
       
       /// LOGICAL (BITWISE) ///
       case AND:
+        mem[sp+1] = mem[sp+1] & mem[sp];
+        sp++;
         break;
       case ANDD:
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=2;
+        set_dword(mem, sp, b & a);
         break;
       case ANDQ:
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, d & c);
         break;
       case OR:
+        mem[sp+1] = mem[sp+1] | mem[sp];
+        sp++;
         break;
       case ORD:
+        a = get_dword(mem, sp);
+        b = get_dword(mem, sp+2);
+        sp+=2;
+        set_dword(mem, sp, b | a);
         break;
       case ORQ:
+        c = get_qword(mem, sp);
+        d = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, d | c);
         break;
       case NOT:
+        mem[sp] = ~mem[sp];
         break;
       case NOTD:
+        a = get_dword(mem, sp);
+        set_dword(mem, sp, ~a);
         break;
       case NOTQ:
+        c = get_qword(mem, sp);
+        set_qword(mem, sp, ~c);
         break;
 
       /// BAD OP CODE ///
