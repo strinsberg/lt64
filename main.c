@@ -585,14 +585,18 @@ int main() {
         pc+=2;
         break;
       case CALL:
+        // Save current return address and frame pointer
         sp-=2;
         set_address(mem, sp, ra);
         sp-=2;
         set_address(mem, sp, fp);
+        // get number of params (max 255)
         mem[--sp] = mem[++pc];
         pc++;
+        // set new return address and frame pointer
         ra = pc+2;
         fp = sp;
+        // get address of function and move pc
         pc = get_address(mem, pc);
         debug_memory(mem, sp, bp);
         continue;

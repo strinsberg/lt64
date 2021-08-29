@@ -27,13 +27,52 @@ tests = [
         "cc bb aa"
     ),
 
-    ### Call and Ret ###
-    # Look over the possibilities
-    # test that args are passed properly
-    # return values are moved properly
-    # local variables are removed after a function returns
-    # local variables in the calling scope should not be removed if they are
-    # not parameters
+    ### CALL, GET, and RET ###
+    # Procs are started on a new line to make it a little easier to read
+    Test(
+        "It Calls a function to add two WORDs and return result",
+        "01 05 01 04 31 02 00 09 00" \
+        + "03 00 03 01 06 32 01 00",
+        "09"
+    ),
+    # Remember args are passed in reverse order of declared params
+    Test(
+        "It Calls a function to do a - b with WORDs and return result",
+        "01 05 01 04 31 02 00 09 00 03 00" \
+        + "03 01 07 32 01 00",
+        "ff"
+    ),
+    Test(
+        "It does not remove stack elements before args",
+        "10 aa aa 10 00 04 10 00 05 31 04 00 0e 00" \
+        + "12 00 12 02 15 32 02 00",
+        "00 09 aa aa"
+    ),
+    Test(
+        "It does not return local function stack elements",
+        "10 00 04 10 00 05 31 04 00 0b 00" \
+        + "01 ff 12 00 12 02 15 32 02 00",
+        "00 09"
+    ),
+    # Reverse a Qword and word on the stack
+    Test(
+        "It calls with different size args and return values",
+        "1F aa bb cc dd 01 05 31 05 00 0c 00" \
+        + "03 00 21 01 32 05 00",
+        "aa bb cc dd 05"
+    ),
+    # important to confirm that ra and fp are being saved properly
+    # as with a single function call they are not really needed
+    # second proc doubles its arg
+    # first proc calls second proc on its arg and adds one to result
+    # Program calls first proc on a word and then subtracts 3 from the result
+    Test(
+        "It handles a nested function call",
+        "01 05 31 01 00 0a 01 03 07 00" \
+        + "03 00 31 01 00 16 01 01 06 32 01 00" \
+        + "01 02 03 00 08 32 01 00 ",
+        "08"
+    ),
 
     ### Push Special Addresses ###
     # BP = fffc

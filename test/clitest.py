@@ -25,7 +25,7 @@ def display_totals(failed, total, reprint_failed=True, show_fail_info=True):
         print(f"{GREEN}****{NORMAL} {total} Tests Passed {GREEN}****{NORMAL}")
 
 def display_test_results(test, passed, num, show_fail_info=True):
-    print(f"{f'{num}:':<3} {test.name:<60}", end="")
+    print(f"{f'{num}:':<3} {test.name:<70}", end="")
     if passed:
         print(f"[{GREEN}PASS{NORMAL}]")
     else:
