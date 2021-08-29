@@ -152,6 +152,83 @@ tests = [
         "1F 00 00 00 08 1F ff ff ff ff 2D 00",
         "00"
     ),
+
+    ### Fixed point (All are signed) ###
+    # Scale Factor of 1000 which makes the max number around (+/-) 2mill
+    # storing it in 32 bits.
+    # The arithmetic does not require new ops from all of them, but just to
+    # keep it simple, and if things change, I will do all of them.
+    Test(
+        # a = 10.123, b = 10.456, ans = 20.579
+        # a * 1000 as hex = 278b, b = 28d8, c = 5063
+        "Add fixed point numbers",
+        "1F 00 00 27 8b 1F 00 00 28 d8 56 00",
+        "00 00 50 63"
+    ),
+    Test(
+        # a = 10.123, b = 10.456, ans = -0.333
+        "Subract fixed point numbers",
+        "1F 00 00 27 8b 1F 00 00 28 d8 57 00",
+        "ff ff fe b3"
+    ),
+    Test(
+        # a = 10.123, b = 10.456, ans = 105.846
+        # multiplication of binary nums must be divided by 1000 to keep at 3 digits
+        "Multiply fixed point numbers",
+        "1F 00 00 27 8b 1F 00 00 28 d8 58 00",
+        "00 01 9d 76"
+    ),
+    Test(
+        # a = 10.123, b = -5.234, ans = -1.934
+        # division must be scaled to floats and divided, then scaled back
+        "Division fixed point numbers, one negative",
+        "1F 00 00 27 8b 1F ff ff eb 8e 59 00",
+        "ff ff f8 72"
+    ),
+    Test(
+        # a = 10.123, b = 10.456, ans = 0.968
+        "Division fixed point numbers",
+        "1F 00 00 27 8b 1F 00 00 28 d8 59 00",
+        "00 00 03 c8"
+    ),
+
+    ### Fixed point comparisson ###
+    Test(
+        # a = 2000000.123, b = 2000000.123
+        "Equality fixed point numbers, success",
+        "1F 77 35 94 7b 1F 77 35 94 7b 5A 00",
+        "01"
+    ),
+    Test(
+        # a = 10.123, b = 10.456
+        "Equality fixed point numbers, failure",
+        "1F 00 00 27 8b 1F 00 00 28 d8 5A 00",
+        "00"
+    ),
+    Test(
+        # a = -5.235, b = 10.123
+        "Less than fixed point, success",
+        "1F ff ff eb 8e 1F 00 00 27 8b 5B 00",
+        "01"
+    ),
+    Test(
+        # a = 10.123, b = -5.234
+        "Less than fixed point failure",
+        "1F 00 00 27 8b 1F ff ff eb 8e 5B 00",
+        "00"
+    ),
+    Test(
+        # a = 10.123, b = -5.234
+        "Greater than fixed point success",
+        "1F 00 00 27 8b 1F ff ff eb 8e 5C 00",
+        "01"
+    ),
+    Test(
+        # a = -5.235, b = 10.123
+        "Greater than fixed point, failure",
+        "1F ff ff eb 8e 1F 00 00 27 8b 5C 00",
+        "00"
+    ),
 ]
 
 

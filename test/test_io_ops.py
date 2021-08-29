@@ -28,6 +28,14 @@ tests = [
          "1F ff ff ff ff 3C 20 00",
          "4294967295"
     ),
+    Test("It prints a fixed point as float, positive",
+         "1F 00 00 27 8b 5D 20 00",
+         "10.123"
+    ),
+    Test("It prints a fixed point as float, negative",
+         "1F ff ff eb 8e 5D 20 00",
+         "-5.234"
+    ),
 
     ### Print Char, String, Hex ###
     Test("It prints a char and a newline char",
@@ -96,6 +104,25 @@ read_tests = [
         "41 00",
         "4294967295",
         "ff ff ff ff"
+    ),
+    vmtest.IoTest(
+        "It reads in a fixed point, positive (truncate)",
+        "5E 00",
+        "10.123999",
+        "00 00 27 8b"
+    ),
+    vmtest.IoTest(
+        "It reads in a fixed point, negative",
+        "5E 00",
+        "-5.234",
+        "ff ff eb 8e"
+    ),
+    # It will wrap around as n * 1000 % 2**32
+    vmtest.IoTest(
+        "It reads in a fixed point, positive (wraps around)",
+        "5E 00",
+        "8000000.123",
+        "dc d6 50 7b"
     ),
 
     ### Read Chars and Strings ###

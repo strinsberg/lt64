@@ -19,14 +19,12 @@
 
 // TODO setup the program to take a filename as an argument
 // TODO setup an assembler (can use a different langauge).
-// TODO Add some support for floating point numbers. Can this be done just by
-// converting them into a byte/int form on read/assemble and printing them? I
-// know it is possible to implement fixed precision floating points where there are
-// always x bits before the decimal and y bits after. This might be a good options
-// as they can probably easily be represented the way I am currently.
   
 // NOTE new OP codes must be added at the end of the enum. The testing program
 // will be broken if they are inserted in the middle.
+
+// NOTE Fixed point numbers are scaled by 1000 and only come signed
+// max number is MAX_INT / 1000 and smallest num is 0.001
 
 // NOTE PUSH, GET, CALL, and RET are all operations that must be given arguments
 // in the program because the nature of these instructions is that these values
@@ -41,6 +39,10 @@
 // be pushed or loaded onto the stack for them to get.
 
 // Macros //
+// NOTE these rely on the memory block being named mem and the stack pointer
+// being named sp. Also on the functions get/set_dword and get/set_qword and
+// the typedefs for signed types SWORD SDWORD SQWORD. All of these are
+// currently defined below.
 #define OP_ADD +
 #define OP_SUB -
 #define OP_TIMES *
@@ -105,6 +107,7 @@
         BIN_Q_START(a,b); \
         sp+=3; \
         mem[sp] = ((SQWORD)(b) op (SQWORD)(a))
+;
 
 // Types //
 typedef unsigned char BYTE;
@@ -113,6 +116,7 @@ typedef unsigned short ADDR;
 typedef unsigned char WORD;
 typedef unsigned short DWORD;
 typedef unsigned int QWORD;
+typedef unsigned long long ULL;
 
 typedef signed char SWORD;
 typedef signed short SDWORD;
@@ -155,7 +159,12 @@ enum OP{ HALT=0x00,
   OR, ORD, ORQ,  // 4E
   NOT, NOTD, NOTQ,  // 51
 
-  PRG, BRK, BRK_ADD, BRK_DROP // 55
+  PRG, BRK, BRK_ADD, BRK_DROP, // 55
+
+  // NOTE no unsigned fixed point nums
+  ADD_F, SUB_F, MULT_F, DIV_F,  // 59
+  EQ_F, LT_F, GT_F,  // 5C
+  PRINT_F, READ_F,  // 5E
 };
 
 // Simple Memory /////////////////////////////////////////////////////////////
@@ -165,6 +174,7 @@ const ADDR LAST_ADDR = 0xffff;
 const BYTE WORD_SIZE = 8;
 const BYTE ADDR_SIZE = 8;
 const WORD META_OFF = 5;
+const DWORD SCALE_FACTOR = 1000;
 
 static inline ADDR get_address(WORD* mem, ADDR addr) {
   return (mem[addr] << ADDR_SIZE) | mem[addr+1];
@@ -741,6 +751,54 @@ int main() {
           set_address(mem, sp, a);
         }
         break;
+
+      /// Fixed Point ///
+      case ADD_F:
+        BIN_Q_OP(OP_ADD, c, d);
+        break;
+      case SUB_F:
+        BIN_Q_OP(OP_SUB, c, d);
+        break;
+      case MULT_F:
+        {
+        ULL x = get_qword(mem, sp);
+        ULL y = get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, (QWORD)((y * x) / SCALE_FACTOR));
+        break;
+        }
+      case DIV_F:
+        {
+        double x = (SQWORD)get_qword(mem, sp);
+        double y = (SQWORD)get_qword(mem, sp+4);
+        sp+=4;
+        set_qword(mem, sp, (QWORD)((y / x) * SCALE_FACTOR));
+        break;
+        }
+      case EQ_F:
+        BIN_Q_COMP(OP_EQ, c, d);
+        break;
+      case LT_F:
+        BIN_Q_COMP(OP_LT, c, d);
+        break;
+      case GT_F:
+        BIN_Q_COMP(OP_GT, c, d);
+        break;
+      case PRINT_F:
+        {
+        double x = (SQWORD)get_qword(mem, sp);
+        printf("%.3lf",  x / SCALE_FACTOR);
+        break;
+        }
+      case READ_F:
+        {
+        double x;
+        scanf("%lf", &x);
+        fprintf(stderr, "%lf\n", x);
+        sp-=4;
+        set_qword(mem, sp, (QWORD)(x * SCALE_FACTOR));
+        break;
+        }
 
       /// BAD OP CODE ///
       default:
