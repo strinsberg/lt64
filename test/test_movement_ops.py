@@ -96,6 +96,62 @@ tests = [
         "36 00",
         "00 00"
     ),
+
+    ### Free Mem ###
+    Test(
+        "It pushes program end pointer (PRG)",
+        "52 00 00 00",
+        "00 04"
+    ),
+    # Same as PRG if there has been no movement
+    Test(
+        "It pushes BRK",
+        "53 00 00 00",
+        "00 04"
+    ),
+    # BRK_ADD will push the inital brk and BRK will push the new value
+    Test(
+        "It pushes the address of brk and adds words to it",
+        "10 00 05 54 53 00",
+        "00 0b 00 06"
+    ),
+    # BRK_DROP will push the new value after the drop
+    Test(
+        "It pushes the address of brk and  words to it",
+        "10 00 05 54 11 10 00 02 55 00",
+        "00 0d"
+    ),
+    # Adding or Dropping too much returns 0xffff
+    # 5 + fff8 is fffd which is in mem range, but past sp
+    Test(
+        "It returns 0xffff if BRK_ADD is too much, past sp",
+        "10 ff f8 54 00",
+        "ff ff"
+    ),
+    # 5 + fff5 is fffa which is in mem range, but is sp
+    Test(
+        "It returns 0xffff if BRK_ADD is too much, is sp",
+        "10 ff f5 54 00",
+        "ff ff"
+    ),
+    # 5 + ffff is 0004
+    Test(
+        "It returns 0xffff if BRK_ADD is too much, out of bounds",
+        "10 ff ff 54 00",
+        "ff ff"
+    ),
+    # 5 - 3 is still in mem range, but below prg
+    Test(
+        "It returns 0xffff if BRK_DROP is too much, below prg",
+        "10 00 03 55 00",
+        "ff ff"
+    ),
+    # 5 - 10 is fffb and wraps around out
+    Test(
+        "It returns 0xffff if BRK_DROP is too much, out of bounds",
+        "10 00 0a 55 00",
+        "ff ff"
+    ),
 ]
 
 

@@ -20,18 +20,7 @@
 // NOTE new OP codes must be added at the end of the enum. The testing program
 // will be broken if they are inserted in the middle.
 
-// TODO Finish implementing all of the unsigned operations for dword and qword
-// and write tests for them.
-// TODO setup an assembler (can use a different langauge). Needs to keep good
-// track of sp,pc,ra,fp in order to allow referencing thier values at a given
-// time in execution. This should probably already be done for some things like
-// labeling etc. so it should not be too much overhead. If it is not easy then
-// there has to be OP codes for pushing thier values to the stack, which might
-// be convinient anyway.
-// TODO Implement dynamic memory if it is possible.
-// TODO Bitwise operations could be added, but are annoying as they all
-// require 3 versions as well. They are probably useful, but not necessary for
-// now. Implement them when you can.
+// TODO setup an assembler (can use a different langauge).
 // TODO Add some support for floating point numbers. Can this be done just by
 // converting them into a byte/int form on read/assemble and printing them? I
 // know it is possible to implement fixed precision floating points where there are
@@ -100,6 +89,8 @@ enum OP{ HALT=0x00,
   AND, ANDD, ANDQ,  // 4B
   OR, ORD, ORQ,  // 4E
   NOT, NOTD, NOTQ,  // 51
+
+  PRG, BRK, BRK_ADD, BRK_DROP // 55
 };
 
 // Simple Memory /////////////////////////////////////////////////////////////
@@ -138,67 +129,6 @@ static inline void set_qword(WORD* mem, ADDR addr, QWORD data) {
   mem[addr+1] = data >> WORD_SIZE * 2;
   mem[addr+2] = data >> WORD_SIZE;
   mem[addr+3] = (WORD)data;
-}
-
-// Dynamic Memory ////////////////////////////////////////////////////////////
-typedef struct Block Block;
-
-struct Block {
-  bool is_free;
-  size_t size;
-  ADDR address;
-  Block* next;
-  Block* prev;
-};
-
-// Could do some tracking of free blocks to make it possible to skip
-// used blocks in the search. The free pointers would have to be updated
-// when free is used.
-
-ADDR find_available(size_t size, Block* heap, Block* top) {
-  // Starting from the beginning look for an unused block that will fit
-  // If a found block is too big split it and make a block the right size
-  // If a found block is too small see if we can combine some unused adjacent
-  // blocks.
-  // If we find something that will work return the ADDR of the start of the
-  // memory chunk
-  // Otherwise return NIL ADDR
-  return NIL;
-}
-
-ADDR request_new(size_t size, Block* top, ADDR* brk, ADDR sp) {
-  // Temp add the size to the brk ADDR
-  // If it will cross sp then return NIL
-  // Otherwise create a new block and connect it to top
-  // Set the size and make it's memory point to the brk ADDR
-  // Move the brk address by size words
-  // Set top to point to the new block and return the blocks ADDR
-  return NIL;
-}
-
-ADDR allocate(size_t size, Block* heap, Block* top, ADDR* brk, ADDR sp) {
-  // Find if there is a free block that will fit
-  ADDR start;
-  start = find_available(size, heap, top);
-
-  // If no open block was found add a new one
-  if (start == NIL) {
-    start = request_new(size, top, brk, sp);
-  }
-  
-  // If we still can't make space for it throw an error
-  // We could return 0 and let the caller decide what to do if they don't get
-  // memory, but for now just crash.
-  if (start == NIL) {
-    fprintf(stderr, "Error: Not enough memory for requested allocation.");
-  }
-  return start;
-}
-
-void free_block(ADDR start, Block* heap) {
-  // find the block with the given address on the heap
-  // set that blocks is_free to true
-  // If free pointers are implemented then update them
 }
 
 // I/O ///////////////////////////////////////////////////////////////////////
@@ -246,8 +176,6 @@ int main() {
   // Some variables we need
   ADDR sp, bp, pc, ra, fp, prog_len, brk;
   WORD* mem;
-  Block* heap = NULL;  // make an init to but a free empty block on the top
-  Block* top = heap;
 
   // Allocate memory for the VM
   mem = (WORD*) calloc((size_t)LAST_ADDR + 1, sizeof(BYTE));
@@ -300,9 +228,9 @@ int main() {
       display_range(mem, sp, bp);
       fprintf(stderr, "\n");
       exit(EXIT_SUF);
-    } else if (sp <= prog_len) {
-      fprintf(stderr, "Error: Stack Overflow: sp=0x%04x, prog_end=0x%04x\n",
-              sp, prog_len);
+    } else if (sp <= prog_len || sp <= brk) {
+      fprintf(stderr, "Error: Stack Overflow: sp=0x%04x, brk=0x%04x, prg=0x%04x\n",
+              sp, brk, prog_len);
       exit(EXIT_SOF);
     } else if (pc >= prog_len) {
       fprintf(stderr,
@@ -604,9 +532,9 @@ int main() {
         {
         a = get_address(mem, fp+1);  // saved fp
         b = get_address(mem, fp+3);  // saved ra
-        ADDR frame_bottom = fp + META_OFF + mem[fp];
-        ADDR ret_sp = frame_bottom - mem[pc+1];
-        memcpy(mem + ret_sp, mem + sp, mem[pc+1]);
+        ADDR frame_bottom = fp + META_OFF + mem[fp];  // address top of args
+        ADDR ret_sp = frame_bottom - mem[pc+1];  // make room for returns
+        memcpy(mem + ret_sp, mem + sp, mem[pc+1]);  // copy returns back
         sp = ret_sp;
         pc = ra;
         fp = a;
@@ -792,6 +720,44 @@ int main() {
       case NOTQ:
         c = get_qword(mem, sp);
         set_qword(mem, sp, ~c);
+        break;
+
+      /// Heap ///
+      // Very minimal. Give words when requested and remove them when requested
+      // as long as this won't go out of bounds with prog_len or sp. User is
+      // responsible for how they use this memory. Not quite like dynamic
+      // memory given by the os that is tracked on the heap. As this is all the
+      // memory available to the programmer they will have to fully manage it
+      // themselves, and don't really have to use the add and drop brk movers
+      // but can just use end of program and use the memory as they want, knowing
+      // that it can be overwritten by the stack if they don't move brk around.
+      case PRG:
+        sp-=2;
+        set_address(mem, sp, prog_len);
+        break;
+      case BRK:
+        sp-=2;
+        set_address(mem, sp, brk);
+        break;
+      case BRK_ADD:
+        a = brk;
+        b = get_dword(mem, sp);  // amount to add
+        if (brk + b < sp && brk + b > brk) {
+          brk += b;
+        } else {
+          a = 0xffff;
+        }
+        set_address(mem, sp, a);
+        break;
+      case BRK_DROP:
+        b = get_dword(mem, sp);  // amount to drop
+        if (brk - b >= prog_len && brk - b < brk) {
+          brk -= b;
+          set_address(mem, sp, brk);
+        } else {
+          a = 0xffff;
+          set_address(mem, sp, a);
+        }
         break;
 
       /// BAD OP CODE ///
