@@ -16,28 +16,8 @@ const char* TEST_FILE = "test.vm";
   const bool DEBUGGING = false;
 #endif
 
-// TODO setup the program to take a filename as an argument
-// TODO setup an assembler (can use a different langauge).
-  
-// NOTE new OP codes must be added at the end of the enum. The testing program
-// will be broken if they are inserted in the middle.
-
-// NOTE Fixed point numbers are scaled by 1000 and only come signed
-// max number is MAX_INT / 1000 and smallest num is 0.001
-
-// NOTE PUSH, GET, CALL, and RET are all operations that must be given arguments
-// in the program because the nature of these instructions is that these values
-// will never be dynamic. If you want to push a value you will need to know
-// that value (if you know the address of that value it is a load now). GET you
-// need to have knowledge of the expected argument layout for the procedure you're
-// in. CALL you must know the label of the procedure when the program is written
-// or at least assembled. For CALL and RET it is necessary to know the number
-// of arguments that you will pass and return when calling or writing the
-// procedure.
-// All other instructions can operate on data they know nothing about so it must
-// be pushed or loaded onto the stack for them to get.
-
 // Macros //
+
 // NOTE these rely on the memory block being named mem and the stack pointer
 // being named sp. Also on the functions get/set_dword and get/set_qword and
 // the typedefs for signed types SWORD SDWORD SQWORD. All of these are
@@ -309,7 +289,15 @@ int main( int argc, char *argv[] ) {
 
   while (run) {
     /// Error Checking ///
-    if (sp > bp) {
+    if (pc >= prog_len) {
+      fprintf(stderr,
+              "Error: Program counter out of bounds: pc=0x%04x, prog_end=0x%04x\n",
+              pc, prog_len);
+      fprintf(stderr, "Stack: ");
+      display_range(mem, sp, bp);
+      fprintf(stderr, "\n");
+      exit(EXIT_POB);
+    } else if (sp > bp) {
       fprintf(stderr, "Error: Stack Underflow: sp=0x%04x, bp=0x%04x\n", sp, bp);
       fprintf(stderr, "Stack: ");
       display_range(mem, sp, bp);
@@ -319,14 +307,6 @@ int main( int argc, char *argv[] ) {
       fprintf(stderr, "Error: Stack Overflow: sp=0x%04x, brk=0x%04x, prg=0x%04x\n",
               sp, brk, prog_len);
       exit(EXIT_SOF);
-    } else if (pc >= prog_len) {
-      fprintf(stderr,
-              "Error: Program counter out of bounds: pc=0x%04x, prog_end=0x%04x\n",
-              pc, prog_len);
-      fprintf(stderr, "Stack: ");
-      display_range(mem, sp, bp);
-      fprintf(stderr, "\n");
-      exit(EXIT_POB);
     }
 
     if (DEBUGGING) {
