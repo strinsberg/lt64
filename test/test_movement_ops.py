@@ -152,6 +152,44 @@ tests = [
         "10 00 0a 55 00",
         "ff ff"
     ),
+
+    ### Blocks and scoping ###
+    Test(
+        "Create a new block and GET upper scope local var",
+        "01 aa 5F 01 bb 65 01 00 00",
+        "aa bb ff fc aa"
+    ),
+    Test(
+        "Create a new block and GET_D upper scope local var",
+        "10 aa bb 5F 01 cc 66 01 00 00",
+        "aa bb cc ff fc aa bb"
+    ),
+    Test(
+        "Create a new block and GET_Q upper scope local var",
+        "1F aa bb cc dd 5F 01 ee 67 01 00 00",
+        "aa bb cc dd ee ff fc aa bb cc dd"
+    ),
+    Test(
+        "Create a new block and GET upper scope local var then END",
+        "01 aa 5F 01 bb 65 01 00 60 00",
+        "aa"
+    ),
+    Test(
+        "Create a new block and get LOCAL var",
+        "01 aa 5F 01 bb 01 cc 01 dd 62 01 00",
+        "cc dd cc bb ff fc aa"
+    ),
+    Test(
+        "Create a new block and get LOCAL_D var",
+        "01 aa 5F 01 bb 10 cc ee 01 dd 63 01 00",
+        "cc ee dd cc ee bb ff fc aa"
+    ),
+    Test(
+        "Create a new block and get LOCAL_Q var",
+        "01 aa 5F 01 bb 1F cc ee ff 22 01 dd 64 01 00",
+        "cc ee ff 22 dd cc ee ff 22 bb ff fc aa"
+    ),
+
 ]
 
 

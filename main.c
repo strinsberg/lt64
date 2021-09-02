@@ -144,6 +144,10 @@ enum OP{ HALT=0x00,
   ADD_F, SUB_F, MULT_F, DIV_F,  // 59
   EQ_F, LT_F, GT_F,  // 5C
   PRINT_F, READ_F,  // 5E
+
+  BEGIN, END, SCP, // 61
+  LOCAL, LOCAL_D, LOCAL_Q,  // 64
+  GET, GET_D, GET_Q,  // 67
 };
 
 // Simple Memory /////////////////////////////////////////////////////////////
@@ -183,6 +187,17 @@ static inline void set_qword(WORD* mem, ADDR addr, QWORD data) {
   mem[addr+1] = data >> WORD_SIZE * 2;
   mem[addr+2] = data >> WORD_SIZE;
   mem[addr+3] = (WORD)data;
+}
+
+static inline ADDR get_block(WORD* mem, ADDR scp, WORD scopes_above) {
+  ADDR block = get_address(mem, scp);
+  ADDR next = block;
+  for (size_t i = 0; i < scopes_above; i++) {
+    next = get_address(mem, next);
+    if (next == 0xffff) break;
+    block = next;
+  }
+  return block;
 }
 
 // I/O ///////////////////////////////////////////////////////////////////////
@@ -232,7 +247,7 @@ void debug_memory(WORD* mem, ADDR start, ADDR end) {
 // Main //////////////////////////////////////////////////////////////////////
 int main( int argc, char *argv[] ) {
   // Some variables we need
-  ADDR sp, bp, pc, ra, fp, prog_len, brk;
+  ADDR sp, bp, pc, ra, fp, prog_len, brk, scp;
   WORD* mem;
 
   // Allocate memory for the VM
@@ -261,11 +276,12 @@ int main( int argc, char *argv[] ) {
   bp = LAST_ADDR - 3;
   fp = bp;
   sp = bp;
+  scp = bp;
 
   // To help keep track if memory in this offset is accidentaly accessed
-  mem[bp] = 0xaa;
-  mem[bp+1] = 0xbb;
-  mem[bp+2] = 0xcc;
+  mem[bp] = 0xff;
+  mem[bp+1] = 0xff;
+  mem[bp+2] = 0x00;
   mem[bp+3] = 0x00;
 
   // Debug info
@@ -790,6 +806,54 @@ int main( int argc, char *argv[] ) {
         set_qword(mem, sp, (QWORD)(x * SCALE_FACTOR));
         break;
         }
+
+      /// Blocks ///
+      case BEGIN:
+        sp-=2;
+        set_address(mem, sp, scp);
+        scp = sp;
+        break;
+      case END:
+        sp = scp + 2;
+        scp = get_address(mem, scp);
+        break;
+      case LOCAL:
+        mem[--sp] = mem[(scp - 1) - mem[++pc]];
+        break;
+      case LOCAL_D:
+        sp-=2;
+        set_dword(mem, sp, get_dword(mem, (scp - 2) - mem[++pc]));
+        break;
+      case LOCAL_Q:
+        sp-=4;
+        set_qword(mem, sp, get_qword(mem, (scp - 4) - mem[++pc]));
+        break;
+      case GET:
+        {
+          WORD scope = mem[++pc];
+          WORD offset = mem[++pc];
+          ADDR block = get_block(mem, scp, scope);
+          mem[--sp] = mem[(block - 1) - offset];
+        }
+        break;
+      case GET_D:
+        {
+          WORD scope = mem[++pc];
+          WORD offset = mem[++pc];
+          ADDR block = get_block(mem, scp, scope);
+          sp-=2;
+          set_dword(mem, sp, get_dword(mem, (block - 2) - offset));
+        }
+        break;
+      case GET_Q:
+        {
+          WORD scope = mem[++pc];
+          WORD offset = mem[++pc];
+          ADDR block = get_block(mem, scp, scope);
+          sp-=4;
+          set_qword(mem, sp, get_qword(mem, (block - 4) - offset));
+        }
+        break;
 
       /// BAD OP CODE ///
       default:
