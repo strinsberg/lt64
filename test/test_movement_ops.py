@@ -27,7 +27,7 @@ tests = [
         "cc bb aa"
     ),
 
-    ### CALL, GET, and RET ###
+    ### CALL, ARG, and RET ###
     # Procs are started on a new line to make it a little easier to read
     Test(
         "It Calls a function to add two WORDs and return result",

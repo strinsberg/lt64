@@ -113,15 +113,15 @@ const size_t EXIT_ARGS = 9;
 
 // OP codes //////////////////////////////////////////////////////////////////
 enum OP{ HALT=0x00,
-  PUSH, POP, GET, LOAD, STORE,  // 05
+  PUSH, POP, ARG, LOAD, STORE,  // 05
   ADD, SUB, MULT, DIV, DIVU,  // 0A
   EQ, LT, LTU, GT, GTU,  // 0F
 
-  PUSH_D, POP_D, GET_D, LOAD_D, STORE_D,  // 14
+  PUSH_D, POP_D, ARG_D, LOAD_D, STORE_D,  // 14
   ADD_D, SUB_D, MULT_D, DIV_D, DIV_DU,  // 19
   EQ_D, LT_D, LT_DU, GT_D, GT_DU,  // 1E
 
-  PUSH_Q, POP_Q, GET_Q, LOAD_Q, STORE_Q,  // 23
+  PUSH_Q, POP_Q, ARG_Q, LOAD_Q, STORE_Q,  // 23
   ADD_Q, SUB_Q, MULT_Q, DIV_Q, DIV_QU,  // 28
   EQ_Q, LT_Q, LT_QU, GT_Q, GT_QU,  // 2D
 
@@ -326,7 +326,7 @@ int main( int argc, char *argv[] ) {
       case POP:
         sp++;
         break;
-      case GET:
+      case ARG:
         mem[--sp] = mem[fp + META_OFF + mem[++pc]];
         break;
       case LOAD:
@@ -379,7 +379,7 @@ int main( int argc, char *argv[] ) {
       case POP_D:
         sp+=2;
         break;
-      case GET_D:
+      case ARG_D:
         pc++;
         mem[--sp] = mem[fp + META_OFF + mem[pc] + 1];
         mem[--sp] = mem[fp + META_OFF + mem[pc]];
@@ -439,7 +439,7 @@ int main( int argc, char *argv[] ) {
       case POP_Q:
         sp+=4;
         break;
-      case GET_Q:
+      case ARG_Q:
         pc++;
         mem[--sp] = mem[fp + META_OFF + mem[pc] + 3];
         mem[--sp] = mem[fp + META_OFF + mem[pc] + 2];
