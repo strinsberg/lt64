@@ -32,8 +32,9 @@ size_t read_program(WORD* mem, const char* filename) {
 }
 
 void display_range(WORD* mem, ADDRESS start, ADDRESS end) {
+  fprintf(stderr, "%hx, %hx\n", start, end);
   for (ADDRESS i = start; i < end; i++) {
-    printf("%hx ", mem[i]);
+    printf("%04hx ", mem[i]);
   }
   printf("\n");
 }

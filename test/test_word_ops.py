@@ -1,18 +1,38 @@
 from clitest import Test
 import vmtest
 
+# NOTE the little endian order of each 16 bit word. 2 spaces are used
+# to separate each word and 1 to separate the bytes since their order is
+# backward we don't want them connected or it is confusing (more so)
+# NOTE stack output is now  bottom -> top
+
 tests = [
-    ### Stack Manipulation ###
     Test(
-        "Push WORDs",
+        "Push words",
         "01 00  bb aa  01 00  dd cc  00 00",
         "aabb ccdd"
+    ),
+    Test(
+        "Pop words",
+        "01 00  bb aa  01 00  dd cc  02 00 00 00",
+        "aabb"
+    ),
+    Test(
+        "Load words relative to top of memory",
+        "01 00  00 00  03 00  01 00  01 00  03 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "Store words relative to top of memory",
+        "01 00 bb aa 01 00 dd cc  01 00  00 00  04 00"
+        + "02 00  01 00  00 00  03 00  00 00",
+        "ccdd"
     ),
 ]
 
 
 if __name__=='__main__':
-    vmtest.VmTests("It handles WORD operations",
+    vmtest.VmTests("Handles WORD operations",
                    vmtest.EXEC_NAME,
                    tests=tests,
                    program_source=vmtest.INPUT_FILE,

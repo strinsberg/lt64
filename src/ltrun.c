@@ -9,6 +9,8 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   dsp = 0;
   rsp = 0;
   pc = 0;
+
+  WORD temp;
   
   bool run = true;
   while (run) {
@@ -18,7 +20,17 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         run = false;
         break;
       case PUSH:
-        data_stack[dsp++] = memory[++pc];
+        data_stack[++dsp] = memory[++pc];
+        break;
+      case POP:
+        dsp--;
+        break;
+      case LOAD:
+        data_stack[dsp] = memory[END_MEMORY - data_stack[dsp]];
+        break;
+      case STORE:
+        memory[END_MEMORY - data_stack[dsp]] = data_stack[dsp-1];
+        dsp-=2;
         break;
 
       /// BAD OP CODE ///
@@ -31,7 +43,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
   // Test output
   if (TESTING) {
-    display_range(data_stack, 0x0000, dsp);
+    display_range(data_stack, 0x0001, dsp + 1);
   }
 
   return EXIT_SUCCESS;
