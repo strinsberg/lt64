@@ -1,6 +1,7 @@
 #include "ltrun.h"
 #include "ltconst.h"
 #include "ltio.h"
+#include "ltmem.h"
 #include "stdio.h"
 #include "stdbool.h"
 
@@ -199,6 +200,48 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       case GTU:
         data_stack[dsp-1] = (WORDU)data_stack[dsp-1] > (WORDU)data_stack[dsp];
         dsp--;
+        break;
+
+      /// Double Arithmetic and Comparisson ///
+      case DADD:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     + get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DSUB:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     - get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DMULT:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     * get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DDIV:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     / get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DMOD:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     % get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DEQ:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     == get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DLT:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     < get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DGT:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     > get_dword(data_stack, dsp-1));
+        dsp-=2;
         break;
 
       /// BAD OP CODE ///

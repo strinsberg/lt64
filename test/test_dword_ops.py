@@ -64,6 +64,105 @@ tests = [
         "0D 00  aa bb bb aa  16 00  0D 00  cc dd dd cc  18 00  17 00  18 00  00 00",
         "ddcc ccdd bbaa aabb bbaa aabb 0000 0000"
     ),
+
+    ## Arithmetic ##
+    Test(
+        "Add the top two double stack elements",
+        "0D 00  00 00  04 00  0D 00  00 00  05 00  2B 00  00 00",
+        "0000 0009"
+    ),
+    Test(
+        "Add the top two double stack elements, One is negative",
+        "0D 00  00 00  04 00  0D 00  ff ff  fe ff  2B 00  00 00",
+        "0000 0002"
+    ),
+    Test(
+        "Subtract the top two double stack elements",
+        "0D 00  00 00  04 00  0D 00  00 00  05 00  2C 00  00 00",
+        "ffff ffff"
+    ),
+    Test(
+        "Subtract the top two double stack elements, One is negative",
+        "0D 00  00 00  04 00  0D 00  ff ff  fe ff  2C 00  00 00",
+        "0000 0006"
+    ),
+    Test(
+        "Multiply the top two double stack elements",
+        "0D 00  00 00  04 00  0D 00  00 00  05 00  2D 00  00 00",
+        "0000 0014"
+    ),
+    Test(
+        "Multiply the top two double stack elements, One is negative",
+        "0D 00  00 00  04 00  0D 00  ff ff  fe ff  2D 00  00 00",
+        "ffff fff8"
+    ),
+    Test(
+        "Divide the top two double stack elements",
+        "0D 00  00 00  04 00  0D 00  00 00  02 00  2E 00  00 00",
+        "0000 0002"
+    ),
+    Test(
+        "Divide the top two double stack elements, One is negative",
+        "0D 00  00 00  04 00  0D 00  ff ff  ff ff  2E 00  00 00",
+        "ffff fffc"
+    ),
+    Test(
+        "Mod the top two double stack elements",
+        "0D 00  00 00  08 00  0D 00  00 00  03 00  2F 00  00 00",
+        "0000 0002"
+    ),
+    Test(
+        "Mod the top two double stack elements, Bottom is negative",
+        "0D 00  00 00  08 00  0D 00  00 00  fd ff  2F 00  00 00",
+        "0000 0002"
+    ),
+    Test(
+        "Mod the top two double stack elements, Top is negative",
+        "0D 00  ff ff  f8 ff  0D 00  00 00  03 00  2F 00  00 00",
+        "ffff fffe"
+    ),
+
+    ## Comparisson ##
+    Test(
+        "Check the top two double stack elements for equality, Pass",
+        "0D 00 00 00  08 00  0D 00  00 00  08 00  30 00  00 00",
+        "0000 0001"
+    ),
+    Test(
+        "Check the top two double stack elements for equality, Fail",
+        "0D 00  00 00  08 00  0D 00  00 00  03 00  30 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "Check the top two double stack elements bottom < top, Pass",
+        "0D 00  00 00  03 00  0D 00  00 00  08 00  31 00  00 00",
+        "0000 0001"
+    ),
+    Test(
+        "Check the top two double stack elements bottom < top, Fail",
+        "0D 00  00 00  08 00  0D 00  00 00  03 00  31 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "Check the top two double stack elements bottom < top, One neg, Pass",
+        "0D 00  ff ff  ff ff  0D 00  00 00  03 00  31 00  00 00",
+        "0000 0001"
+    ),
+    Test(
+        "Check the top two double stack elements bottom > top, Pass",
+        "0D 00  00 00  08 00  0D 00  00 00  03 00  32 00  00 00",
+        "0000 0001"
+    ),
+    Test(
+        "Check the top two double stack elements bottom > top, Fail",
+        "0D 00  00 00  03 00  0D 00  00 00  08 00  32 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "Check the top two double stack elements bottom > top, One neg, Pass",
+        "0D 00  00 00  03 00  0D 00  ff ff  ff ff  32 00  00 00",
+        "0000 0001"
+    ),
 ]
 
 if __name__=='__main__':
