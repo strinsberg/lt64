@@ -136,6 +136,71 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         data_stack[++dsp] = return_stack[rsp];
         break;
 
+      /// Word Arithmetic ///
+      case ADD:
+        data_stack[dsp-1] = data_stack[dsp-1] + data_stack[dsp];
+        dsp--;
+        break;
+      case SUB:
+        data_stack[dsp-1] = data_stack[dsp-1] - data_stack[dsp];
+        dsp--;
+        break;
+      case MULT:
+        data_stack[dsp-1] = data_stack[dsp-1] * data_stack[dsp];
+        dsp--;
+        break;
+      case DIV:
+        data_stack[dsp-1] = data_stack[dsp-1] / data_stack[dsp];
+        dsp--;
+        break;
+      case MOD:
+        data_stack[dsp-1] = data_stack[dsp-1] % data_stack[dsp];
+        dsp--;
+        break;
+
+      /// Signed Comparisson ///
+      case EQ:
+        data_stack[dsp-1] = data_stack[dsp-1] == data_stack[dsp];
+        dsp--;
+        break;
+      case LT:
+        data_stack[dsp-1] = data_stack[dsp-1] < data_stack[dsp];
+        dsp--;
+        break;
+      case GT:
+        data_stack[dsp-1] = data_stack[dsp-1] > data_stack[dsp];
+        dsp--;
+        break;
+
+      /// Unsigned Artihmetic and Comparisson ///
+      case MULTU:
+        {
+          // large signed numbers cast to unsigned dword as 0xffff____
+          // so we have to zero those bits before the calculation 
+          DWORDU a = (DWORDU)data_stack[dsp-1] & 0xffff;
+          DWORDU b = (DWORDU)data_stack[dsp] & 0xffff;
+          DWORDU res = a * b;
+          data_stack[dsp-1] = res >> 16; 
+          data_stack[dsp] = res;
+        }
+        break;
+      case DIVU:
+        data_stack[dsp-1] = (WORDU)data_stack[dsp-1] / (WORDU)data_stack[dsp];
+        dsp--;
+        break;
+      case MODU:
+        data_stack[dsp-1] = (WORDU)data_stack[dsp-1] % (WORDU)data_stack[dsp];
+        dsp--;
+        break;
+      case LTU:
+        data_stack[dsp-1] = (WORDU)data_stack[dsp-1] < (WORDU)data_stack[dsp];
+        dsp--;
+        break;
+      case GTU:
+        data_stack[dsp-1] = (WORDU)data_stack[dsp-1] > (WORDU)data_stack[dsp];
+        dsp--;
+        break;
+
       /// BAD OP CODE ///
       default:
         fprintf(stderr, "Error: Unknown OP code: 0x%hx\n", memory[pc]);

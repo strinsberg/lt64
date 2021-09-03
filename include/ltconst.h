@@ -6,7 +6,9 @@
 
 typedef short WORD;
 typedef unsigned short ADDRESS;
+typedef ADDRESS WORDU;
 typedef int DWORD;
+typedef unsigned int DWORDU;
 
 // Testing vars
 extern const bool TESTING;

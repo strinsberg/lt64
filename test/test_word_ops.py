@@ -75,6 +75,172 @@ tests = [
         "01 00  bb aa  0A 00  01 00  dd cc  0C 00  0B 00  0C 00  00 00",
         "ccdd aabb aabb 0000"
     ),
+
+    ## Arithmetic ##
+    Test(
+        "Add the top two stack elements",
+        "01 00  04 00  01 00  05 00  19 00  00 00",
+        "0009"
+    ),
+    Test(
+        "Add the top two stack elements, One is negative",
+        "01 00  04 00  01 00  fe ff  19 00  00 00",
+        "0002"
+    ),
+    Test(
+        "Subtract the top two stack elements",
+        "01 00  04 00  01 00  05 00  1A 00  00 00",
+        "ffff"
+    ),
+    Test(
+        "Subtract the top two stack elements, One is negative",
+        "01 00  04 00  01 00  fe ff  1A 00  00 00",
+        "0006"
+    ),
+    Test(
+        "Multiply the top two stack elements",
+        "01 00  04 00  01 00  05 00  1B 00  00 00",
+        "0014"
+    ),
+    Test(
+        "Multiply the top two stack elements, One is negative",
+        "01 00  04 00  01 00  fe ff  1B 00  00 00",
+        "fff8"
+    ),
+    Test(
+        "Divide the top two stack elements",
+        "01 00  0A 00  01 00  05 00  1C 00  00 00",
+        "0002"
+    ),
+    Test(
+        "Divide the top two stack elements, One is negative",
+        "01 00  04 00  01 00  ff ff  1C 00  00 00",
+        "fffc"
+    ),
+    Test(
+        "Mod the top two stack elements",
+        "01 00  08 00  01 00  03 00  1D 00  00 00",
+        "0002"
+    ),
+    Test(
+        "Mod the top two stack elements, Bottom is negative",
+        "01 00  08 00  01 00  fd ff  1D 00  00 00",
+        "0002"
+    ),
+    Test(
+        "Mod the top two stack elements, Top is negative",
+        "01 00 f8 ff  01 00  03 00  1D 00  00 00",
+        "fffe"
+    ),
+
+    ## Comparisson ##
+    Test(
+        "Check the top two stack elements for equality, Pass",
+        "01 00  08 00  01 00  08 00  1E 00  00 00",
+        "0001"
+    ),
+    Test(
+        "Check the top two stack elements for equality, Fail",
+        "01 00  08 00  01 00  03 00  1E 00  00 00",
+        "0000"
+    ),
+    Test(
+        "Check the top two stack elements bottom < top, Pass",
+        "01 00  03 00  01 00  08 00  1F 00  00 00",
+        "0001"
+    ),
+    Test(
+        "Check the top two stack elements bottom < top, Fail",
+        "01 00  08 00  01 00  03 00  1F 00  00 00",
+        "0000"
+    ),
+    Test(
+        "Check the top two stack elements bottom < top, One neg, Pass",
+        "01 00  ff ff  01 00  03 00  1F 00  00 00",
+        "0001"
+    ),
+    Test(
+        "Check the top two stack elements bottom > top, Pass",
+        "01 00  08 00  01 00  03 00  20 00  00 00",
+        "0001"
+    ),
+    Test(
+        "Check the top two stack elements bottom > top, Fail",
+        "01 00  03 00  01 00  08 00  20 00  00 00",
+        "0000"
+    ),
+    Test(
+        "Check the top two stack elements bottom > top, One neg, Pass",
+        "01 00  03 00  01 00  ff ff  20 00  00 00",
+        "0001"
+    ),
+
+    ## Unsigned Arithmetic and Comparisson ##
+    Test(
+        "(Unsigned) Multiply 2 words and store as double word, large",
+        "01 00  E8 FD  01 00  E8 03  21 00  00 00",
+        "03df d240"
+    ),
+    Test(
+        "(Unsigned) Multiply 2 words and store as double word",
+        "01 00  00 7D  01 00  E8 03  21 00  00 00",
+        "01e8 4800"
+    ),
+    Test(
+        "(Unsigned) Divide 2 words on stack, large",
+        "01 00  E8 FD  01 00  E8 03  22 00  00 00",
+        "0041"
+    ),
+    Test(
+        "(Unsigned) Divide 2 words on stack",
+        "01 00  00 7D  01 00  E8 03  22 00  00 00",
+        "0020"
+    ),
+    Test(
+        "(Unsigned) Mod the top two stack elements",
+        "01 00  08 00  01 00  03 00  23 00  00 00",
+        "0002"
+    ),
+    Test(
+        "(Unsigned) Mod the top two stack elements, Bottom is large",
+        "01 00  08 00  01 00  fd ff  23 00  00 00",
+        "0008"
+    ),
+    Test(
+        "(Unsigned) Mod the top two stack elements, Top is large",
+        "01 00 f8 ff  01 00  03 00  23 00  00 00",
+        "0002"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom < top, Pass",
+        "01 00  03 00  01 00  08 00  24 00  00 00",
+        "0001"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom < top, Fail",
+        "01 00  08 00  01 00  03 00  24 00  00 00",
+        "0000"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom < top, large, Fail",
+        "01 00  ff ff  01 00  03 00  24 00  00 00",
+        "0000"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom > top, Pass",
+        "01 00  08 00  01 00  03 00  25 00  00 00",
+        "0001"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom > top, Fail",
+        "01 00  03 00  01 00  08 00  25 00  00 00",
+        "0000"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom > top, large, Fail",
+        "01 00  03 00  01 00  ff ff  25 00  00 00",
+        "0000"
+    ),
 ]
 
 
