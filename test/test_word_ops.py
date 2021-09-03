@@ -67,13 +67,13 @@ tests = [
     ## Return stack ##
     Test(
         "Push an element onto return stack and get it back",
-        "01 00  bb aa  0A 00  01 00  dd cc  0B 00  00 00",
-        "ccdd aabb"
+        "01 00  bb aa  0A 00  01 00  dd cc  0B 00  0C 00  00 00",
+        "ccdd aabb 0000"
     ),
     Test(
         "Push an element onto return stack and grab it twice",
-        "01 00  bb aa  0A 00  01 00  dd cc  0C 00  0B 00  00 00",
-        "ccdd aabb aabb"
+        "01 00  bb aa  0A 00  01 00  dd cc  0C 00  0B 00  0C 00  00 00",
+        "ccdd aabb aabb 0000"
     ),
 ]
 
