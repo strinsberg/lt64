@@ -32,6 +32,28 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         memory[END_MEMORY - data_stack[dsp]] = data_stack[dsp-1];
         dsp-=2;
         break;
+      case FST:
+        data_stack[dsp+1] = data_stack[dsp];
+        dsp++;
+        break;
+      case SEC:
+        data_stack[dsp+1] = data_stack[dsp-1];
+        dsp++;
+        break;
+      case NTH:
+        data_stack[dsp] = data_stack[dsp - data_stack[dsp] - 1];
+        break;
+      case SWAP:
+        temp = data_stack[dsp];
+        data_stack[dsp] = data_stack[dsp-1];
+        data_stack[dsp-1] = temp;
+        break;
+      case ROT:
+        temp = data_stack[dsp-2];
+        data_stack[dsp-2] = data_stack[dsp-1];
+        data_stack[dsp-1] = data_stack[dsp];
+        data_stack[dsp] = temp;
+        break;
 
       /// BAD OP CODE ///
       default:

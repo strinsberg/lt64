@@ -7,7 +7,7 @@
 enum op_codes { HALT=0,
   PUSH, POP, LOAD, STORE,  // 04
   FST, SEC, NTH,  // 07
-  ROT, PULL,  // 09
+  SWAP, ROT,  // 09
   RPUSH, RPOP, RDUP,  // 0C
 
   DPUSH, DPOP, DLOAD, DSTORE,  // 10

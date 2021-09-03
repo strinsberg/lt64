@@ -4,9 +4,16 @@ import vmtest
 # NOTE the little endian order of each 16 bit word. 2 spaces are used
 # to separate each word and 1 to separate the bytes since their order is
 # backward we don't want them connected or it is confusing (more so)
+
 # NOTE stack output is now  bottom -> top
 
+# NOTE load and store use addresses that are relative to the top of memory
+# and move down. So you need to address them 0, 1, 2, etc.
+
+# NOTE nth is 0 based, even though it is a little awkward with fst and sec
+
 tests = [
+    ### Standard ops ###
     Test(
         "Push words",
         "01 00  bb aa  01 00  dd cc  00 00",
@@ -27,6 +34,34 @@ tests = [
         "01 00 bb aa 01 00 dd cc  01 00  00 00  04 00"
         + "02 00  01 00  00 00  03 00  00 00",
         "ccdd"
+    ),
+
+    ### Manipulation ###
+    Test(
+        "Duplicate stack top",
+        "01 00  bb aa  01 00  dd cc  05 00  00 00",
+        "aabb ccdd ccdd"
+    ),
+    Test(
+        "Duplicate stack top - 1",
+        "01 00  bb aa  01 00  dd cc  06 00  00 00",
+        "aabb ccdd aabb"
+    ),
+    Test(
+        "Duplicate nth element down from stack top",
+        "01 00  bb aa  01 00  dd cc  01 00  ff ee"
+        + "01 00  02 00  07 00  00 00",
+        "aabb ccdd eeff aabb"
+    ),
+    Test(
+        "Swap the top two stack elements",
+        "01 00  bb aa  01 00  dd cc  08 00  00 00",
+        "ccdd aabb"
+    ),
+    Test(
+        "Rotate 3rd stack (top - 2) element to stack top",
+        "01 00  bb aa  01 00  dd cc  01 00  ff ee  09 00  00 00",
+        "ccdd eeff aabb"
     ),
 ]
 
