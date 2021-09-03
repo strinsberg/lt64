@@ -1,6 +1,9 @@
 #ifndef LT_64_RUN_H
 #define LT_64_RUN_H
 
+#include "ltconst.h"
+#include "stddef.h"
+
 enum op_codes { HALT=0,
   PUSH, POP, LOAD, STORE,  // 04
   FST, SEC, NTH,  // 07

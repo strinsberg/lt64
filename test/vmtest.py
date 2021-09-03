@@ -2,13 +2,6 @@ from clitest import *
 
 ### Vars ###
 TEST_NAME = "./lt64-test"
-COMPILE_FOR_TESTS = ['gcc', 'main.c', '-o', 'lt64-test',
-                     '-Og', '-D', 'TEST']
-
-COMPILE_FOR_RELEASE_TESTS = ['gcc', 'main.c', '-o', 'lt64-release-test',
-                             '-O3', '-D', 'TEST']
-RELEASE_TEST_NAME = "./lt64-release-test"
-
 INPUT_FILE = "test.vm"
 
 ### EXIT CODES ###

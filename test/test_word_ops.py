@@ -5,9 +5,21 @@ tests = [
     ### Stack Manipulation ###
     Test(
         "Push WORDs",
-        "01 aa 01 bb 00",
-        "bb aa"
+        "01 00  bb aa  01 00  dd cc  00 00",
+        "aabb ccdd"
     ),
+]
+
+
+if __name__=='__main__':
+    vmtest.VmTests("It handles WORD operations",
+                   vmtest.EXEC_NAME,
+                   tests=tests,
+                   program_source=vmtest.INPUT_FILE,
+                   compile_command=vmtest.COMPILE_FOR_TESTS).run()
+
+
+    """
     Test(
         "Pop a WORD",
         "01 aa 01 bb 01 cc 02 00",
@@ -151,13 +163,4 @@ tests = [
         "01 08 01 ff 0F 00",
         "00"
     ),
-]
-
-
-if __name__=='__main__':
-    vmtest.VmTests("It handles WORD operations",
-                   vmtest.EXEC_NAME,
-                   tests=tests,
-                   program_source=vmtest.INPUT_FILE,
-                   compile_command=vmtest.COMPILE_FOR_TESTS).run()
-
+"""

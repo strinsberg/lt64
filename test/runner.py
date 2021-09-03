@@ -15,32 +15,24 @@ def make_vm_suite(name, tests, prog_name):
                           tests=tests,
                           program_source=vmtest.INPUT_FILE)
 
-
-if len(sys.argv) > 1 and sys.argv[1] == "release":
-    prog_name = vmtest.RELEASE_TEST_NAME
-    compile_command = vmtest.COMPILE_FOR_RELEASE_TESTS
-else:
-    prog_name = vmtest.TEST_NAME
-    compile_command = vmtest.COMPILE_FOR_TESTS
-
+prog_name = vmtest.TEST_NAME
 
 suites = [
     make_vm_suite("It handles word ops", word.tests, prog_name),
-    make_vm_suite("It handles dword ops", dword.tests, prog_name),
-    make_vm_suite("It handles qword ops", qword.tests, prog_name),
-    make_vm_suite("It handles movement ops", move.tests, prog_name),
-    make_vm_suite("It handles print ops", io.tests, prog_name),
-    make_vm_suite("It handles bit ops", bits.tests, prog_name),
-    vmtest.VmIoTests("It handles io ops",
-                        prog_name,
-                        tests=io.read_tests,
-                        program_source=vmtest.INPUT_FILE),
+    #make_vm_suite("It handles dword ops", dword.tests, prog_name),
+    #make_vm_suite("It handles qword ops", qword.tests, prog_name),
+    #make_vm_suite("It handles movement ops", move.tests, prog_name),
+    #make_vm_suite("It handles print ops", io.tests, prog_name),
+    #make_vm_suite("It handles bit ops", bits.tests, prog_name),
+    #vmtest.VmIoTests("It handles io ops",
+                        #prog_name,
+                        #tests=io.read_tests,
+                        #program_source=vmtest.INPUT_FILE),
     vmtest.VmErrorTests("It handles errors",
                         prog_name,
                         tests=errors.tests,
                         program_source=vmtest.INPUT_FILE),
 ]
 
-compile_program(compile_command)
 run_test_suites(suites)
 
