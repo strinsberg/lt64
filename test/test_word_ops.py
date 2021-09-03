@@ -63,6 +63,18 @@ tests = [
         "01 00  bb aa  01 00  dd cc  01 00  ff ee  09 00  00 00",
         "ccdd eeff aabb"
     ),
+
+    ## Return stack ##
+    Test(
+        "Push an element onto return stack and get it back",
+        "01 00  bb aa  0A 00  01 00  dd cc  0B 00  00 00",
+        "ccdd aabb"
+    ),
+    Test(
+        "Push an element onto return stack and grab it twice",
+        "01 00  bb aa  0A 00  01 00  dd cc  0C 00  0B 00  00 00",
+        "ccdd aabb aabb"
+    ),
 ]
 
 

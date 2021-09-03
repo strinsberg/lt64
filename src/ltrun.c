@@ -54,6 +54,15 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         data_stack[dsp-1] = data_stack[dsp];
         data_stack[dsp] = temp;
         break;
+      case RPUSH:
+        return_stack[++rsp] = data_stack[dsp--];
+        break;
+      case RPOP:
+        data_stack[++dsp] = return_stack[rsp--];
+        break;
+      case RGRAB:
+        data_stack[++dsp] = return_stack[rsp];
+        break;
 
       /// BAD OP CODE ///
       default:

@@ -8,12 +8,12 @@ enum op_codes { HALT=0,
   PUSH, POP, LOAD, STORE,  // 04
   FST, SEC, NTH,  // 07
   SWAP, ROT,  // 09
-  RPUSH, RPOP, RDUP,  // 0C
+  RPUSH, RPOP, RGRAB,  // 0C
 
   DPUSH, DPOP, DLOAD, DSTORE,  // 10
   DFST, DSEC, DNTH,  // 13
   DROT, DPULL,  // 15
-  DRPUSH, DRPOP, DRDUP,  // 18
+  DRPUSH, DRPOP, DRGRAB,  // 18
 
   ADD, SUB, MULT, DIV, MOD,  // 1D
   EQ, LT, GT,  // 20
