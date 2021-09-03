@@ -24,7 +24,7 @@ enum op_codes { HALT=0,
 
   DADD, DSUB, DMULT, DDIV, DMOD,  // 2F
   DEQ, DLT, DGT,  // 32
-  DMULTU, DDIVU, DMODU, DLTU, DGTU,  // 37
+  DMULTU_unused, DDIVU, DMODU, DLTU, DGTU,  // 37
 
   DSL, DSR,  // 39
   DAND, DOR, DNOT,  // 3C

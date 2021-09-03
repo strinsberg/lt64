@@ -4,7 +4,7 @@
 #include "ltconst.h"
 
 static inline DWORD get_dword(WORD* mem, ADDRESS pos) {
-  return (mem[pos] << WORD_SIZE) | mem[pos+1];
+  return (mem[pos] << WORD_SIZE) | (mem[pos+1] & 0xffff);
 }
 
 static inline void set_dword(WORD* mem, ADDRESS pos, DWORD val) {
@@ -13,7 +13,7 @@ static inline void set_dword(WORD* mem, ADDRESS pos, DWORD val) {
 }
 
 static inline DWORD get_rev_dword(WORD* mem, ADDRESS pos) {
-  return (mem[pos+1] << WORD_SIZE) | mem[pos];
+  return (mem[pos+1] << WORD_SIZE) | (mem[pos] & 0xffff);
 }
 
 static inline void set_rev_dword(WORD* mem, ADDRESS pos, DWORD val) {

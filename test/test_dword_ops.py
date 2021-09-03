@@ -113,7 +113,7 @@ tests = [
     ),
     Test(
         "Mod the top two double stack elements, Bottom is negative",
-        "0D 00  00 00  08 00  0D 00  00 00  fd ff  2F 00  00 00",
+        "0D 00  00 00  08 00  0D 00  ff ff  fd ff  2F 00  00 00",
         "0000 0002"
     ),
     Test(
@@ -163,6 +163,64 @@ tests = [
         "0D 00  00 00  03 00  0D 00  ff ff  ff ff  32 00  00 00",
         "0000 0001"
     ),
+
+    ## Unsigned Arithmetic and Comparison ##
+    Test(
+        "(Unsigned) Divide 2 double words on stack, large",
+        "0D 00  00 00 E8 FD  0D 00  00 00  E8 03  34 00  00 00",
+        "0000 0041"
+    ),
+    Test(
+        "(Unsigned) Divide 2 double words on stack",
+        "0D 00  00 00  00 7D  0D 00  00 00  E8 03  34 00  00 00",
+        "0000 0020"
+    ),
+    Test(
+        "(Unsigned) Mod the top two double stack elements",
+        "0D 00  00 00  08 00  0D 00  00 00  03 00  35 00  00 00",
+        "0000 0002"
+    ),
+    Test(
+        "(Unsigned) Mod the top two double stack elements, Bottom is large",
+        "0D 00  00 00  08 00  0D 00  ff ff  fd ff  35 00  00 00",
+        "0000 0008"
+    ),
+    Test(
+        "(Unsigned) Mod the top two double stack elements, Top is large",
+        "0D 00  ff ff  f8 ff  0D 00  00 00  03 00  35 00  00 00",
+        "0000 0002"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom < top, Pass",
+        "0D 00  00 00  03 00  0D 00  00 00  08 00  36 00  00 00",
+        "0000 0001"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom < top, Fail",
+        "0D 00  00 00  08 00  0D 00  00 00  03 00  36 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom < top, large, Fail",
+        "0D 00  ff ff  ff ff  0D 00  00 00  03 00  36 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom > top, Pass",
+        "0D 00  00 00  08 00  0D 00  00 00  03 00  37 00  00 00",
+        "0000 0001"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom > top, Fail",
+        "0D 00  00 00  03 00  0D 00  00 00  08 00  37 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "(Unsigned) Check the top two stack elements bottom > top, large, Fail",
+        "0D 00  00 00  03 00  0D 00  ff ff  ff ff  37 00  00 00",
+        "0000 0000"
+    ),
+
 ]
 
 if __name__=='__main__':

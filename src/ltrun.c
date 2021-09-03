@@ -244,6 +244,28 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         dsp-=2;
         break;
 
+      /// Unsigned Double Arithmetic and Comparisson ///
+      case DDIVU:
+        set_dword(data_stack, dsp-3, (DWORDU)get_dword(data_stack, dsp-3)
+                                     / (DWORDU)get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DMODU:
+        set_dword(data_stack, dsp-3, (DWORDU)get_dword(data_stack, dsp-3)
+                                     % (DWORDU)get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DLTU:
+        set_dword(data_stack, dsp-3, (DWORDU)get_dword(data_stack, dsp-3)
+                                     < (DWORDU)get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DGTU:
+        set_dword(data_stack, dsp-3, (DWORDU)get_dword(data_stack, dsp-3)
+                                     > (DWORDU)get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+
       /// BAD OP CODE ///
       default:
         fprintf(stderr, "Error: Unknown OP code: 0x%hx\n", memory[pc]);
