@@ -2,6 +2,79 @@ from clitest import Test
 import vmtest
 
 tests = [
+    ### Standard ops ###
+    Test(
+        "Push double words",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  00 00",
+        "bbaa aabb ddcc ccdd"
+    ),
+    Test(
+        "Pop double words",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  0E 00 00 00",
+        "bbaa aabb"
+    ),
+    Test(
+        "Load double words relative to top of memory",
+        "01 00  00 00  0F 00  01 00  01 00  0F 00  00 00",
+        "0000 0000 0000 0000"
+    ),
+    Test(
+        "Store double words relative to top of memory",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  01 00  00 00  10 00"
+        + "0E 00  01 00  00 00  0F 00  00 00",
+        "ddcc ccdd"
+    ),
+
+    ### Manipulation ###
+    Test(
+        "Duplicate double stack top",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  11 00  00 00",
+        "bbaa aabb ddcc ccdd ddcc ccdd"
+    ),
+    Test(
+        "Duplicate double stack top - 2",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  12 00  00 00",
+        "bbaa aabb ddcc ccdd bbaa aabb"
+    ),
+    Test(
+        "Duplicate nth double element down from stack top",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  0D 00  ee ff ff ee"
+        + "01 00  02 00  13 00  00 00",
+        "bbaa aabb ddcc ccdd ffee eeff bbaa aabb"
+    ),
+    Test(
+        "Swap the top two double stack elements",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  14 00  00 00",
+        "ddcc ccdd bbaa aabb"
+    ),
+    Test(
+        "Rotate 3rd stack (top - 5) double element to stack top",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  0D 00  ee ff ff ee  15 00  00 00",
+        "ddcc ccdd ffee eeff bbaa aabb"
+    ),
+
+    ## Return stack ##
+    Test(
+        "Push a double element onto return stack and get it back",
+        "0D 00  aa bb bb aa  16 00  0D 00  cc dd dd cc  17 00  18 00  00 00",
+        "ddcc ccdd bbaa aabb 0000 0000"
+    ),
+    Test(
+        "Push a double element onto return stack and grab it twice",
+        "0D 00  aa bb bb aa  16 00  0D 00  cc dd dd cc  18 00  17 00  18 00  00 00",
+        "ddcc ccdd bbaa aabb bbaa aabb 0000 0000"
+    ),
+]
+
+if __name__=='__main__':
+    vmtest.VmTests("It handles WORD operations",
+                   vmtest.EXEC_NAME,
+                   tests=tests,
+                   program_source=vmtest.INPUT_FILE,
+                   compile_command=vmtest.COMPILE_FOR_TESTS).run()
+
+
+"""
     ### Stack Manipulation ###
     Test(
         "Push DWORDs",
@@ -151,11 +224,4 @@ tests = [
         "10 00 08 10 ff ff 1E 00",
         "00"
     ),
-]
-
-if __name__=='__main__':
-    vmtest.VmTests("It handles WORD operations",
-                   vmtest.EXEC_NAME,
-                   tests=tests,
-                   program_source=vmtest.INPUT_FILE,
-                   compile_command=vmtest.COMPILE_FOR_TESTS).run()
+"""

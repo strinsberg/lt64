@@ -19,7 +19,7 @@ prog_name = vmtest.TEST_NAME
 
 suites = [
     make_vm_suite("It handles word ops", word.tests, prog_name),
-    #make_vm_suite("It handles dword ops", dword.tests, prog_name),
+    make_vm_suite("It handles dword ops", dword.tests, prog_name),
     #make_vm_suite("It handles qword ops", qword.tests, prog_name),
     #make_vm_suite("It handles movement ops", move.tests, prog_name),
     #make_vm_suite("It handles print ops", io.tests, prog_name),

@@ -12,7 +12,7 @@ enum op_codes { HALT=0,
 
   DPUSH, DPOP, DLOAD, DSTORE,  // 10
   DFST, DSEC, DNTH,  // 13
-  DROT, DPULL,  // 15
+  DSWAP, DROT,  // 15
   DRPUSH, DRPOP, DRGRAB,  // 18
 
   ADD, SUB, MULT, DIV, MOD,  // 1D
