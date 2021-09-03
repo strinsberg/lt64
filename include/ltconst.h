@@ -1,0 +1,32 @@
+#ifndef LT_64_CONST_H
+#define LT_64_CONST_H
+
+#include "stdlib.h"
+#include "stdbool.h"
+
+typedef short WORD;
+typedef unsigned short ADDRESS;
+typedef int DWORD;
+
+// Testing vars
+extern const bool TESTING;
+extern const char* TEST_FILE;
+extern const bool DEBUGGING;
+
+// Sizes for the various memorys
+extern const ADDRESS END_MEMORY;
+extern const ADDRESS END_RETURN;
+extern const ADDRESS END_STACK;
+
+// Exit codes //
+extern const size_t EXIT_MEM;
+extern const size_t EXIT_LEN;
+extern const size_t EXIT_FILE;
+extern const size_t EXIT_SOF;
+extern const size_t EXIT_SUF;
+extern const size_t EXIT_POB;
+extern const size_t EXIT_OP;
+extern const size_t EXIT_STR;
+extern const size_t EXIT_ARGS;
+
+#endif

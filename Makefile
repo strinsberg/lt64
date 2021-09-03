@@ -1,15 +1,15 @@
 CC= gcc
-CC_FLAGS = -o lt64 -O3
-CC_DEBUG_FLAGS= -o lt64-debug -Og -D DEBUG
+CC_FLAGS = -o lt64 -O3 -I include
+CC_DEBUG_FLAGS= -o lt64-debug -Og -D DEBUG -I include
 
 %.o: %.cpp
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-release: main.c
-	$(CC) main.c $(CC_FLAGS)
+release: src/main.c
+	$(CC) src/* $(CC_FLAGS)
 
-debug: main.c
-	$(CC) main.c $(CC_DEBUG_FLAGS)
+debug: src/main.c
+	$(CC) src/* $(CC_DEBUG_FLAGS)
 
 .PHONY: tests
 tests:
