@@ -75,16 +75,6 @@ tests = [
         "01 00  aa aa  43 05  00 00",
         "aaaa 0009"
     ),
-    Test(
-        "Pushes the free memory address onto the stack",
-        "01 00  aa aa  44 00  00 00",
-        "aaaa 0404"
-    ),
-    Test(
-        "Pushes the free memory address onto the stack + offset",
-        "01 00  aa aa  44 05  00 00",
-        "aaaa 0409"
-    ),
 
 ]
 

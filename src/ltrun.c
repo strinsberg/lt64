@@ -13,7 +13,9 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   bfp = length;
 
   WORD temp;
+  WORDU utemp;
   DWORD dtemp;
+  DWORDU udtemp;
   long long ftemp;
   
   bool run = true;
@@ -373,8 +375,43 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       case BFP:
         data_stack[++dsp] = bfp + (memory[pc] >> BYTE_SIZE);
         break;
-      case FRP:
-        data_stack[++dsp] = bfp + BUFFER_SIZE + (memory[pc] >> BYTE_SIZE);
+
+      /// Printing ///
+      case WPRN:
+        printf("%hd", data_stack[dsp--]);
+        break;
+      case DPRN:
+        printf("%d", get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case WPRNU:
+        printf("%hu", data_stack[dsp--]);
+        break;
+      case DPRNU:
+        printf("%u", get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case FPRN:
+        printf("%.3lf", (double)get_dword(data_stack, dsp-1)
+                        / SCALES[ DEFAULT_SCALE ]);
+        dsp-=2;
+        break;
+      case FPRNSC:
+        utemp = (memory[pc] >> BYTE_SIZE);
+        if (utemp && utemp < SCALE_MAX) {
+          dtemp = SCALES[utemp];
+        } else {
+          dtemp = SCALES[ DEFAULT_SCALE ];
+          utemp = DEFAULT_SCALE;
+        }
+        printf("%.*lf", utemp, (double)get_dword(data_stack, dsp-1) / dtemp);
+        dsp-=2;
+        break;
+
+      /// Reading ///
+      case WREAD:
+        scanf("%hd", &temp);
+        data_stack[++dsp] = temp;
         break;
 
       /// BAD OP CODE ///

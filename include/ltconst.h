@@ -22,6 +22,9 @@ extern const ADDRESS END_STACK;
 extern const WORD WORD_SIZE;
 extern const WORD BYTE_SIZE;
 extern const WORD BUFFER_SIZE;
+extern const WORD DEFAULT_SCALE;
+extern const WORDU SCALE_MAX;
+extern const DWORD SCALES[];
 
 // Exit codes //
 extern const size_t EXIT_MEM;
