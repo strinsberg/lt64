@@ -221,6 +221,43 @@ tests = [
         "0000 0000"
     ),
 
+    ## Bits ##
+    Test(
+        "Left shift double word on top of the stack",
+        "0D 00  00 00  02 00  38 02  38 01  00 00",
+        "0000 0010"
+    ),
+    Test(
+        "Left shift double word on top of the stack, negative",
+        "0D 00  ff ff  fe ff  38 02  38 01  00 00",
+        "ffff fff0"
+    ),
+    Test(
+        "Right shift double word on top of the stack",
+        "0D 00  00 00  10 00  39 02  39 01  00 00",
+        "0000 0002"
+    ),
+    Test(
+        "Right shift word on top of the stack, negative",
+        "0D 00  ff ff f0 ff  39 02  39 01  00 00",
+        "ffff fffe"
+    ),
+    Test(
+        "Bitwise and the 2 double words on top of the stack",
+        "0D 00  ff 00  ff 00  0D 00  00 ff  00 ff  3A 00  00 00",
+        "0000 0000"
+    ),
+    Test(
+        "Bitwise or the 2 double words on top of the stack",
+        "0D 00  00 ff  00 ff  0D 00  ff 00  ff 00  3B 00  00 00",
+        "ffff ffff"
+    ),
+    Test(
+        "Bitwise not the double word on top of the stack",
+        "0D 00  f0 f0 f0 f0  3C 00  00 00",
+        "0f0f 0f0f"
+    ),
+
 ]
 
 if __name__=='__main__':

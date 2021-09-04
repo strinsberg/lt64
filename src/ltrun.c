@@ -285,6 +285,29 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         data_stack[dsp] = ~data_stack[dsp];
         break;
 
+      /// Bitwise double words ///
+      case DSL:
+        set_dword(data_stack, dsp-1,
+            get_dword(data_stack, dsp-1) << (memory[pc] >> BYTE_SIZE));
+        break;
+      case DSR:
+        set_dword(data_stack, dsp-1,
+            get_dword(data_stack, dsp-1) >> (memory[pc] >> BYTE_SIZE));
+        break;
+      case DAND:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     & get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DOR:
+        set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
+                                     | get_dword(data_stack, dsp-1));
+        dsp-=2;
+        break;
+      case DNOT:
+        set_dword(data_stack, dsp-1, ~get_dword(data_stack, dsp-1));
+        break;
+
       /// BAD OP CODE ///
       default:
         fprintf(stderr, "Error: Unknown OP code: 0x%hx\n", memory[pc]);
