@@ -334,13 +334,13 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Movement ///
       case JUMP:
-        {
-          temp = (memory[pc] >> BYTE_SIZE);
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp) {
+          pc += temp;
+        } else {
           pc = data_stack[dsp--];
-          if (temp) pc += temp;
-          continue;
         }
-        break;
+        continue;
 
       /// BAD OP CODE ///
       default:
