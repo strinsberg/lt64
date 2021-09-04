@@ -241,6 +241,44 @@ tests = [
         "01 00  03 00  01 00  ff ff  25 00  00 00",
         "0000"
     ),
+
+    ## Bits ##
+    Test(
+        "Left shift word on top of the stack",
+        "01 00  02 00  26 01  26 01  00 00",
+        "0008"
+    ),
+    Test(
+        "Left shift word on top of the stack, negative",
+        "01 00  fe ff  26 01  26 01  00 00",
+        "fff8"
+    ),
+    Test(
+        "Right shift word on top of the stack",
+        "01 00  08 00  27 01  27 01  00 00",
+        "0002"
+    ),
+    Test(
+        "Right shift word on top of the stack, negative",
+        "01 00  f8 ff  27 01  27 01  00 00",
+        "fffe"
+    ),
+    Test(
+        "Bitwise and the 2 words on top of the stack",
+        "01 00  ff 00  01 00  00 ff  28 00  00 00",
+        "0000"
+    ),
+    Test(
+        "Bitwise or the 2 words on top of the stack",
+        "01 00  00 ff  01 00  ff 00  29 00  00 00",
+        "ffff"
+    ),
+    Test(
+        "Bitwise not the word on top of the stack",
+        "01 00  f0 f0  2A 00  00 00",
+        "0f0f"
+    ),
+
 ]
 
 
@@ -251,149 +289,3 @@ if __name__=='__main__':
                    program_source=vmtest.INPUT_FILE,
                    compile_command=vmtest.COMPILE_FOR_TESTS).run()
 
-
-    """
-    Test(
-        "Pop a WORD",
-        "01 aa 01 bb 01 cc 02 00",
-        "bb aa"
-    ),
-
-    ### Storage ###
-    Test(
-        "Load a word from the bottom of the stack.",
-        "01 aa 01 bb 10 ff fb 04 00",
-        "aa bb aa"
-    ),
-    Test(
-        "Store a word on the bottom of the stack.",
-        "01 aa 01 bb 01 cc 10 ff fb 05 00",
-        "bb cc"
-    ),
-
-    ### Addition ###
-    Test(
-        "Add positive WORDs",
-        "01 08 01 07 06 00",
-        "0f"
-    ),
-    Test(
-        "Add positive and negative WORDs",  # ff is -1
-        "01 ff 01 05 06 00",
-        "04"
-    ),
-
-    ### Subtract ###
-    Test(
-        "Subract positive WORDs",
-        "01 07 01 08 07 00",
-        "ff"
-    ),
-    Test(
-        "Subract positive and negative WORDs",  # ff is -1
-        "01 05 01 ff 07 00",
-        "06"
-    ),
-
-    ### Multiply ###
-    Test(
-        "Multiply positive WORDs",
-        "01 08 01 07 08 00",
-        "38"
-    ),
-    Test(
-        "Multiply positive and negative WORDs",  # fb is -5
-        "01 05 01 fb 08 00",
-        "e7"
-    ),
-
-    ### Divide ###
-    Test(
-        "Divide positive WORDs",
-        "01 38 01 07 09 00",
-        "08"
-    ),
-    Test(
-        "Divide positive and negative WORDs",  # ff is -1
-        "01 05 01 ff 09 00",
-        "fb"
-    ),
-    Test(
-        "Divide positive WORDs small by large",
-        "01 03 01 10 09 00",
-        "00"
-    ),
-    Test(
-        "Divide positive WORDs with remainder",
-        "01 38 01 03 09 00",
-        "12"
-    ),
-    Test(
-        "Divide UNsigned positive WORDs",
-        "01 38 01 08 0A 00",
-        "07"
-    ),
-    Test(
-        "Divide UNsigned positive and negative WORDs",  # ff is -1
-        "01 05 01 ff 0A 00",
-        "00"
-    ),
-
-    ### Equality ###
-    Test(
-        "Equal WORDs success",
-        "01 08 01 08 0B 00",
-        "01"
-    ),
-    Test(
-        "Equal WORDs failure",  # fb is -5
-        "01 05 01 fb 0B 00",
-        "00"
-    ),
-
-    ### Less Than ###
-    # Note that the order of the arguments has to change for signed to unsigned
-    # as a large unsigned value is a negative signed value
-    Test(
-        "Less than WORDs success",
-        "01 ff 01 08 0C 00",
-        "01"
-    ),
-    Test(
-        "Less than WORDs failure",
-        "01 08 01 ff 0C 00",
-        "00"
-    ),
-    Test(
-        "Less than UNsigned WORDs success",  # ff is 225
-        "01 08 01 ff 0D 00",
-        "01"
-    ),
-    Test(
-        "Less than UNsigned WORDs failure",  # ff is 225
-        "01 ff 01 08 0D 00",
-        "00"
-    ),
-
-    ### Greater Than ###
-    Test(
-        "Greater than WORDs success",
-        "01 08 01 ff 0E 00",
-        "01"
-    ),
-    Test(
-        "Greater than WORDs failure",
-        "01 ff 01 08 0E 00",
-        "00"
-    ),
-    Test(
-        "Greater than UNsigned WORDs success",  # ff is 225
-        "01 ff 01 08 0F 00",
-        "01"
-    ),
-    Test(
-        "Greater than UNsigned WORDs failure",  # ff is 225
-        "01 08 01 ff 0F 00",
-        "00"
-    ),
-"""

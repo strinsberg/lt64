@@ -20,6 +20,7 @@ const ADDRESS END_MEMORY = 0xffff;
 const ADDRESS END_RETURN = 0x0777;
 const ADDRESS END_STACK = 0x7777; 
 const WORD WORD_SIZE = 16;
+const WORD BYTE_SIZE = 8;
 
 // Exit codes //
 const size_t EXIT_MEM = 1;

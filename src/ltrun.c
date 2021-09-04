@@ -16,7 +16,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   bool run = true;
   while (run) {
 
-    switch (memory[pc]) {
+    switch (memory[pc] & 0xff) {
       case HALT:
         run = false;
         break;
@@ -264,6 +264,25 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         set_dword(data_stack, dsp-3, (DWORDU)get_dword(data_stack, dsp-3)
                                      > (DWORDU)get_dword(data_stack, dsp-1));
         dsp-=2;
+        break;
+
+      /// Bitwise words ///
+      case SL:
+        data_stack[dsp] = data_stack[dsp] << (memory[pc] >> BYTE_SIZE);
+        break;
+      case SR:
+        data_stack[dsp] = data_stack[dsp] >> (memory[pc] >> BYTE_SIZE);
+        break;
+      case AND:
+        data_stack[dsp-1] = data_stack[dsp-1] & data_stack[dsp];
+        dsp--;
+        break;
+      case OR:
+        data_stack[dsp-1] = data_stack[dsp-1] | data_stack[dsp];
+        dsp--;
+        break;
+      case NOT:
+        data_stack[dsp] = ~data_stack[dsp];
         break;
 
       /// BAD OP CODE ///

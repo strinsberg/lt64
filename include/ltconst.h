@@ -20,6 +20,7 @@ extern const ADDRESS END_MEMORY;
 extern const ADDRESS END_RETURN;
 extern const ADDRESS END_STACK;
 extern const WORD WORD_SIZE;
+extern const WORD BYTE_SIZE;
 
 // Exit codes //
 extern const size_t EXIT_MEM;
