@@ -17,10 +17,11 @@ const char* TEST_FILE = "test.vm";
 
 // Sizes for the various memorys
 const ADDRESS END_MEMORY = 0xffff;
-const ADDRESS END_RETURN = 0x0777;
-const ADDRESS END_STACK = 0x7777; 
+const ADDRESS END_RETURN = 0x1000;
+const ADDRESS END_STACK = 0x1000;
 const WORD WORD_SIZE = 16;
 const WORD BYTE_SIZE = 8;
+const WORD BUFFER_SIZE = 0x0400;
 
 // Exit codes //
 const size_t EXIT_MEM = 1;

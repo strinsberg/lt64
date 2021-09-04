@@ -27,8 +27,8 @@ size_t read_program(WORD* mem, const char* filename) {
   }
   fclose(fptr);
 
-  // Give back the program length
-  return length;
+  // Give back the number of words in the program
+  return length / sizeof(WORD);
 }
 
 void display_range(WORD* mem, ADDRESS start, ADDRESS end) {

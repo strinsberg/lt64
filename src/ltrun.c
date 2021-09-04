@@ -6,12 +6,15 @@
 #include "stdbool.h"
 
 size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack) {
-  ADDRESS dsp, rsp, pc;
+  ADDRESS dsp, rsp, pc, bfp;
   dsp = 0;
   rsp = 0;
   pc = 0;
+  bfp = length;
 
   WORD temp;
+  DWORD dtemp;
+  long long ftemp;
   
   bool run = true;
   while (run) {
@@ -366,6 +369,12 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case PC:
         data_stack[++dsp] = pc + (memory[pc] >> BYTE_SIZE);
+        break;
+      case BFP:
+        data_stack[++dsp] = bfp + (memory[pc] >> BYTE_SIZE);
+        break;
+      case FRP:
+        data_stack[++dsp] = bfp + BUFFER_SIZE + (memory[pc] >> BYTE_SIZE);
         break;
 
       /// BAD OP CODE ///

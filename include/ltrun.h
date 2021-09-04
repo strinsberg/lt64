@@ -30,15 +30,17 @@ enum op_codes { HALT=0,
   DAND, DOR, DNOT,  // 3C
 
   JUMP, BRANCH, CALL, RET,  // 40
-  DSP, PC, RSP_unused,  // 43
+  DSP, PC, BFP, FRP,  // 44
 
-  PRN, DPRN, PRNU, DPRNU, FPRN,  // 48
-  PRNCH, PRNSTR,  // 4A
+  WPRN, DPRN, PRNU, DPRNU, FPRN, FPRNSC,  // 4A
+  PRNCH, PRN, PRNLN, PRNBUF,  // 4E
 
-  READ, DREAD, FREAD, READCH,  // 4E
-  READSTR, READLN,  // 50
+  WREAD, DREAD, FREAD, FREADSC,  // 52
+  READCH, READ, READLN, READSP,  // 56
 
-  FMULT, FDIV,  // 52
+  HIGH, LOW, UNPACK, PACK,  // 5A
+
+  FMULT, FDIV,  // 5C
 };
 
 size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack);
