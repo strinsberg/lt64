@@ -341,6 +341,32 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
           pc = data_stack[dsp--];
         }
         continue;
+      case BRANCH:
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (data_stack[dsp--]) {
+          if (temp) {
+            pc += temp;
+          } else {
+            pc = data_stack[dsp--];
+          }
+          continue;
+        }
+        if (!temp) dsp--;
+        break;
+      case CALL:
+        return_stack[++rsp] = pc + 1;
+        pc = data_stack[dsp--];
+        continue;
+      case RET:
+        pc = return_stack[rsp--];
+        continue;
+      case DSP:
+        data_stack[dsp+1] = dsp + (memory[pc] >> BYTE_SIZE);
+        dsp++;
+        break;
+      case PC:
+        data_stack[++dsp] = pc + (memory[pc] >> BYTE_SIZE);
+        break;
 
       /// BAD OP CODE ///
       default:

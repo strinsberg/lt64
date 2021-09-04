@@ -30,7 +30,7 @@ enum op_codes { HALT=0,
   DAND, DOR, DNOT,  // 3C
 
   JUMP, BRANCH, CALL, RET,  // 40
-  SP, PC, FRP,  // 43
+  DSP, PC, RSP_unused,  // 43
 
   PRN, DPRN, PRNU, DPRNU, FPRN,  // 48
   PRNCH, PRNSTR,  // 4A
