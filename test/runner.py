@@ -20,7 +20,7 @@ suites = [
     make_vm_suite("Handles word ops", word.tests, prog_name),
     make_vm_suite("Handles dword ops", dword.tests, prog_name),
     #make_vm_suite("Handles qword ops", qword.tests, prog_name),
-    #make_vm_suite("Handles movement ops", move.tests, prog_name),
+    make_vm_suite("Handles movement ops", move.tests, prog_name),
     #make_vm_suite("Handles print ops", io.tests, prog_name),
     #make_vm_suite("Handles bit ops", bits.tests, prog_name),
     #vmtest.VmIoTests("Handles read ops",

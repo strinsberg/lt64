@@ -268,10 +268,22 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Bitwise words ///
       case SL:
-        data_stack[dsp] = data_stack[dsp] << (memory[pc] >> BYTE_SIZE);
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp) {
+          data_stack[dsp] = data_stack[dsp] << temp;
+        } else {
+          data_stack[dsp-1] = data_stack[dsp-1] << data_stack[dsp];
+          dsp--;
+        }
         break;
       case SR:
-        data_stack[dsp] = data_stack[dsp] >> (memory[pc] >> BYTE_SIZE);
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp) {
+          data_stack[dsp] = data_stack[dsp] >> temp;
+        } else {
+          data_stack[dsp-1] = data_stack[dsp-1] >> data_stack[dsp];
+          dsp--;
+        }
         break;
       case AND:
         data_stack[dsp-1] = data_stack[dsp-1] & data_stack[dsp];
@@ -287,12 +299,24 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Bitwise double words ///
       case DSL:
-        set_dword(data_stack, dsp-1,
-            get_dword(data_stack, dsp-1) << (memory[pc] >> BYTE_SIZE));
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp) {
+          set_dword(data_stack, dsp-1, get_dword(data_stack, dsp-1) << temp);
+        } else {
+          set_dword(data_stack, dsp-2, get_dword(data_stack, dsp-2)
+                                       << data_stack[dsp]);
+          dsp--;
+        }
         break;
       case DSR:
-        set_dword(data_stack, dsp-1,
-            get_dword(data_stack, dsp-1) >> (memory[pc] >> BYTE_SIZE));
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp) {
+          set_dword(data_stack, dsp-1, get_dword(data_stack, dsp-1) >> temp);
+        } else {
+          set_dword(data_stack, dsp-2, get_dword(data_stack, dsp-2)
+                                       >> data_stack[dsp]);
+          dsp--;
+        }
         break;
       case DAND:
         set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
@@ -306,6 +330,16 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case DNOT:
         set_dword(data_stack, dsp-1, ~get_dword(data_stack, dsp-1));
+        break;
+
+      /// Movement ///
+      case JUMP:
+        {
+          temp = (memory[pc] >> BYTE_SIZE);
+          pc = data_stack[dsp--];
+          if (temp) pc += temp;
+          continue;
+        }
         break;
 
       /// BAD OP CODE ///

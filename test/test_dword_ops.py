@@ -223,6 +223,11 @@ tests = [
 
     ## Bits ##
     Test(
+        "Left shift double word at top - 1 by top of the stack",
+        "0D 00  00 00  02 00  01 00 03 00 38 00  00 00",
+        "0000 0010"
+    ),
+    Test(
         "Left shift double word on top of the stack",
         "0D 00  00 00  02 00  38 02  38 01  00 00",
         "0000 0010"
@@ -231,6 +236,11 @@ tests = [
         "Left shift double word on top of the stack, negative",
         "0D 00  ff ff  fe ff  38 02  38 01  00 00",
         "ffff fff0"
+    ),
+    Test(
+        "Right shift double word on top of the stack",
+        "0D 00  00 00  10 00  01 00  03 00  39 00  00 00",
+        "0000 0002"
     ),
     Test(
         "Right shift double word on top of the stack",
