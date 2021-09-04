@@ -37,7 +37,7 @@ read_tests = [
     ### Read Number Tests ###
     vmtest.IoTest(
         "It reads in a word sized negative int",
-        "4F 00",
+        "50 00",
         "-1",  # input
         "ffff"  # expected stack
     ),

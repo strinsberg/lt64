@@ -376,7 +376,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         data_stack[++dsp] = bfp + (memory[pc] >> BYTE_SIZE);
         break;
 
-      /// Printing ///
+      /// Number Printing ///
       case WPRN:
         printf("%hd", data_stack[dsp--]);
         break;
@@ -406,6 +406,25 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         }
         printf("%.*lf", utemp, (double)get_dword(data_stack, dsp-1) / dtemp);
         dsp-=2;
+        break;
+
+      /// Char and String printing ///
+      case PRNCH:
+        // take the low byte of top of stack and print it as a char
+        // printf("%c", data_stack[dsp--] & 0xff);
+        break;
+      case PRN:
+        // Print from bfp to first null or buffer end
+        break;
+      case PRNLN:
+        // Print from bfp to first null or buffer end with a newline
+        break;
+      case PRNSP:
+        // Print from top of stack to first null and remove them
+        break;
+      case PRNMEM:
+        // Print from memory address to first null, travel like load store
+        // do so start at a low and move to a high as offsets from mem end
         break;
 
       /// Reading ///
