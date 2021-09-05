@@ -41,8 +41,15 @@ enum op_codes { HALT=0,
   BFLOAD, BFSTORE,  // 59
   HIGH, LOW, UNPACK, PACK,  // 5D
 
-  FMULT, FDIV,  // 5F
+  MEMCOPY, STRCOPY, FMULT, FDIV,  // 61
 };
+
+enum copy_codes {
+  MEM_BUF = 0, MEM_DS,
+  BUF_MEM, BUF_DS,
+  DS_MEM, DS_BUF,
+};
+
 
 size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack);
 

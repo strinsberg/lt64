@@ -45,9 +45,11 @@ DWORDU print_string(WORD* mem, ADDRESS start, ADDRESS max) {
     WORD chars = mem[atemp];
     WORD low = chars & 0xff;
     WORD high = chars >> BYTE_SIZE;
-    if (!low) break;
+    if (!low)
+      return start - (atemp - 1);
     printf("%c", low);
-    if (!high) break;
+    if (!high)
+      return start - (atemp - 1);
     printf("%c", high);
     atemp--;
   }

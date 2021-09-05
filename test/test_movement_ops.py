@@ -76,6 +76,23 @@ tests = [
         "aaaa 03ff"
     ),
 
+    ## Memory copying ##
+    Test(
+        "Copy memory from memory to buffer",
+        "01 00  41 42  01 00  00 00  04 00"
+        + "01 00  43 44  01 00  01 00  04 00"
+        + "01 00  00 00  01 00  02 00  5E 00  4C 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy memory from memory to buffer",
+        "01 00  41 42  01 00  00 00  04 00"
+        + "01 00  43 44  01 00  01 00  04 00"
+        + "01 00  00 00  01 00  02 00  5E 01  4E 00  00 00",
+        "ABCD"
+    ),
+
+
 ]
 
 

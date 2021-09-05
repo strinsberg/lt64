@@ -21,4 +21,13 @@ static inline void set_rev_dword(WORD* mem, ADDRESS pos, DWORD val) {
   mem[pos] = (WORD)val;
 }
 
+static inline DWORDU string_length(WORD* mem, ADDRESS start) {
+  ADDRESS atemp = start;
+  while (atemp) {
+    if (!mem[atemp]) break;
+    atemp--;
+  }
+  return start - (atemp - 1);
+}
+
 #endif

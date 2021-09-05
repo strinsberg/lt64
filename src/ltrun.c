@@ -4,6 +4,7 @@
 #include "ltmem.h"
 #include "stdio.h"
 #include "stdbool.h"
+#include "string.h"
 
 size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack) {
   ADDRESS dsp, rsp, pc, bfp;
@@ -450,6 +451,86 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         } else {
           atemp = data_stack[dsp--];
           memory[bfp - atemp] = data_stack[dsp--];
+        }
+        break;
+
+      /// Memory copying ///
+      case MEMCOPY:
+        switch (memory[pc] >> BYTE_SIZE) {
+          ADDRESS start, size;
+          case MEM_BUF:
+            size = data_stack[dsp--];
+            start = data_stack[dsp--];
+            memcpy(memory + (bfp - (size - 1)),
+                   memory + ((END_MEMORY - start) - (size - 1)),
+                   size * 2);
+            break;
+          case MEM_DS:
+            size = data_stack[dsp--];
+            start = data_stack[dsp--];
+            memcpy(data_stack + dsp + 1,
+                   memory + ((END_MEMORY - start) - (size - 1)),
+                   size * 2);
+            dsp += size;
+            break;
+          case BUF_MEM:
+            size = data_stack[dsp--];
+            start = data_stack[dsp--];
+            memcpy(memory + (start - size), memory + (bfp - size), size * 2);
+            break;
+          case BUF_DS:
+            size = data_stack[dsp--];
+            memcpy(data_stack + dsp, memory + (bfp - size), size * 2);
+            dsp += size;
+            break;
+          case DS_BUF:
+            size = data_stack[dsp--];
+            memcpy(memory + (bfp - size), data_stack + dsp, size * 2);
+            dsp -= size;
+            break;
+          case DS_MEM:
+            size = data_stack[dsp--];
+            start = data_stack[dsp--];
+            memcpy(memory + (start - size), data_stack + dsp, size * 2);
+            dsp -= size;
+            break;
+        }
+        break;
+      case STRCOPY:
+        switch (memory[pc] >> BYTE_SIZE) {
+          ADDRESS start, size;
+          case MEM_BUF:
+            start = data_stack[dsp--];
+            size = string_length(memory, start);
+            memcpy(memory + (bfp - size), memory + (start - size), size * 2);
+            break;
+          case MEM_DS:
+            start = data_stack[dsp--];
+            size = string_length(memory, start);
+            memcpy(data_stack + dsp, memory + (start - size), size * 2);
+            dsp += size;
+            break;
+          case BUF_MEM:
+            start = data_stack[dsp--];
+            size = string_length(memory, bfp);
+            memcpy(memory + (start - size), memory + (bfp - size), size * 2);
+            break;
+          case BUF_DS:
+            size = string_length(memory, bfp);
+            memcpy(data_stack + dsp, memory + (bfp - size), size * 2);
+            dsp += size;
+            break;
+          case DS_BUF:
+            size = string_length(memory, dsp);
+            memcpy(memory + (bfp - size), data_stack + dsp, size * 2);
+            dsp -= size;
+            break;
+          case DS_MEM:
+            start = data_stack[dsp--];
+            size = string_length(memory, dsp);
+            memcpy(memory + (start - size), data_stack + dsp, size * 2);
+            dsp -= size;
+            break;
         }
         break;
 
