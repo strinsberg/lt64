@@ -52,5 +52,10 @@ enum copy_codes {
 
 
 size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack);
+void exec_memcopy(WORD* memory, WORD* data_stack,
+                  ADDRESS bfp, ADDRESS* dsp,
+                  WORDU size, WORD code);
+void exec_strcopy(WORD* memory, WORD* data_stack,
+                  ADDRESS bfp, ADDRESS* dsp, WORD code);
 
 #endif

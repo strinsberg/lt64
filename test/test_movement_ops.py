@@ -85,14 +85,84 @@ tests = [
         "ABCD"
     ),
     Test(
-        "Copy memory from memory to buffer",
+        "Copy memory from memory to stack",
         "01 00  41 42  01 00  00 00  04 00"
         + "01 00  43 44  01 00  01 00  04 00"
         + "01 00  00 00  01 00  02 00  5E 01  4E 00  00 00",
         "ABCD"
     ),
+    Test(
+        "Copy memory from buffer to memory",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "01 00  00 00  01 00  02 00  5E 02"
+        + "01 00  00 00  4F 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy memory from buffer to stack",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "01 00  02 00  5E 03  4E 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy memory from stack to memory",
+        "01 00  00 00  01 00  43 44  01 00  41 42"
+        + "01 00  00 00  01 00  03 00  5E 04"
+        + "01 00  00 00  4F 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy memory from stack to buffer",
+        "01 00  00 00  01 00  43 44  01 00  41 42"
+        + "01 00  03 00  5E 05  4C 00  00 00",
+        "ABCD"
+    ),
 
-
+    ## String copying ##
+    Test(
+        "Copy string from memory to buffer",
+        "01 00  41 42  01 00  00 00  04 00"
+        + "01 00  43 44  01 00  01 00  04 00"
+        + "01 00  00 00  5F 00  4C 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy string from memory to stack",
+        "01 00  41 42  01 00  00 00  04 00"
+        + "01 00  43 44  01 00  01 00  04 00"
+        + "01 00  00 00  5F 01  4E 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy string from buffer to memory",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "01 00  00 00  5F 02"
+        + "01 00  00 00  4F 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy string from buffer to stack",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "5F 03  4E 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy string from stack to memory",
+        "01 00  00 00  01 00  43 44  01 00  41 42"
+        + "01 00  00 00  5F 04"
+        + "01 00  00 00  4F 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Copy string from stack to buffer",
+        "01 00  00 00  01 00  43 44  01 00  41 42"
+        + "5F 05  4C 00  00 00",
+        "ABCD"
+    ),
 ]
 
 
