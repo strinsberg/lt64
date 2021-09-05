@@ -10,8 +10,9 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   dsp = 0;
   rsp = 0;
   pc = 0;
-  bfp = length;
+  bfp = length + BUFFER_SIZE;
 
+  ADDRESS atemp;
   WORD temp;
   WORDU utemp;
   DWORD dtemp;
@@ -81,14 +82,14 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         dsp-=2;
         break;
       case DLOAD:
-        temp = data_stack[dsp--];
-        data_stack[++dsp] = memory[END_MEMORY - temp + 1];
-        data_stack[++dsp] = memory[END_MEMORY - temp];
+        atemp = data_stack[dsp--];
+        data_stack[++dsp] = memory[END_MEMORY - atemp + 1];
+        data_stack[++dsp] = memory[END_MEMORY - atemp];
         break;
       case DSTORE:
-        temp = data_stack[dsp--];
-        memory[END_MEMORY - temp] = data_stack[dsp];
-        memory[END_MEMORY - temp + 1] = data_stack[dsp-1];
+        atemp = data_stack[dsp--];
+        memory[END_MEMORY - atemp] = data_stack[dsp];
+        memory[END_MEMORY - atemp + 1] = data_stack[dsp-1];
         dsp-=2;
         break;
       case DFST:
@@ -102,9 +103,9 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         dsp+=2;
         break;
       case DNTH:
-        temp = data_stack[dsp--] * 2;
-        data_stack[dsp+1] = data_stack[dsp - temp - 1];
-        data_stack[dsp+2] = data_stack[dsp - temp];
+        atemp = data_stack[dsp--] * 2;
+        data_stack[dsp+1] = data_stack[dsp - atemp - 1];
+        data_stack[dsp+2] = data_stack[dsp - atemp];
         dsp+=2;
         break;
       case DSWAP:
@@ -373,7 +374,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         data_stack[++dsp] = pc + (memory[pc] >> BYTE_SIZE);
         break;
       case BFP:
-        data_stack[++dsp] = bfp + (memory[pc] >> BYTE_SIZE);
+        data_stack[++dsp] = bfp - (memory[pc] >> BYTE_SIZE);
         break;
 
       /// Number Printing ///
@@ -397,40 +398,59 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         dsp-=2;
         break;
       case FPRNSC:
-        utemp = (memory[pc] >> BYTE_SIZE);
-        if (utemp && utemp < SCALE_MAX) {
-          dtemp = SCALES[utemp];
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp && temp < SCALE_MAX) {
+          dtemp = SCALES[temp];
         } else {
           dtemp = SCALES[ DEFAULT_SCALE ];
-          utemp = DEFAULT_SCALE;
+          temp = DEFAULT_SCALE;
         }
-        printf("%.*lf", utemp, (double)get_dword(data_stack, dsp-1) / dtemp);
+        printf("%.*lf", temp, (double)get_dword(data_stack, dsp-1) / dtemp);
         dsp-=2;
         break;
 
       /// Char and String printing ///
       case PRNCH:
-        // take the low byte of top of stack and print it as a char
-        // printf("%c", data_stack[dsp--] & 0xff);
+        printf("%c", data_stack[dsp--] & 0xff);
         break;
       case PRN:
         // Print from bfp to first null or buffer end
+        print_string(memory, bfp, BUFFER_SIZE);
         break;
       case PRNLN:
         // Print from bfp to first null or buffer end with a newline
+        print_string(memory, bfp, BUFFER_SIZE);
+        printf("\n");
         break;
       case PRNSP:
         // Print from top of stack to first null and remove them
+        utemp = print_string(data_stack, dsp, dsp);
+        while (utemp) {
+          dsp--;
+          utemp--;
+        }
         break;
       case PRNMEM:
-        // Print from memory address to first null, travel like load store
-        // do so start at a low and move to a high as offsets from mem end
+        // Print from memory offset to first null
+        atemp = data_stack[dsp--];
+        print_string(memory, END_MEMORY - atemp, END_MEMORY - length);
         break;
 
       /// Reading ///
       case WREAD:
         scanf("%hd", &temp);
         data_stack[++dsp] = temp;
+        break;
+
+      /// Buffer and Chars ///
+      case BFLOAD:
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp) {
+          memory[bfp - temp + 1] = data_stack[dsp--];
+        } else {
+          atemp = data_stack[dsp--];
+          memory[bfp - atemp] = data_stack[dsp--];
+        }
         break;
 
       /// BAD OP CODE ///

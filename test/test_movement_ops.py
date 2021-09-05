@@ -68,12 +68,12 @@ tests = [
     Test(
         "Pushes the char buffer address onto the stack",
         "01 00  aa aa  43 00  00 00",
-        "aaaa 0004"
+        "aaaa 0404"
     ),
     Test(
         "Pushes the char buffer address onto the stack + offset",
         "01 00  aa aa  43 05  00 00",
-        "aaaa 0009"
+        "aaaa 03ff"
     ),
 
 ]

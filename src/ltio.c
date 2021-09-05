@@ -38,3 +38,18 @@ void display_range(WORD* mem, ADDRESS start, ADDRESS end) {
   }
   printf("\n");
 }
+
+DWORDU print_string(WORD* mem, ADDRESS start, ADDRESS max) {
+  ADDRESS atemp = start;
+  while (atemp && start - atemp < max) {
+    WORD chars = mem[atemp];
+    WORD low = chars & 0xff;
+    WORD high = chars >> BYTE_SIZE;
+    if (!low) break;
+    printf("%c", low);
+    if (!high) break;
+    printf("%c", high);
+    atemp--;
+  }
+  return start - atemp;
+}

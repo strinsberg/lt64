@@ -31,6 +31,34 @@ tests = [
          "12345.98"
     ),
 
+    ## Strings and Chars ##
+    Test("It prints characters",
+         "01 00  43 44  01 00  41 42  4B 00  4B 00  00 00",
+         "AC"
+    ),
+    Test("It prints a string from the buffer",
+         "01 00  41 42  58 01  01 00  43 44  58 02"
+         + "4C 00  00 00",
+         "ABCD"
+    ),
+    Test("It prints a string from the buffer with a new line",
+         "01 00  41 42  58 01  01 00  43 44  58 02"
+         + "4D 00  00 00",
+         "ABCD\n"
+    ),
+    Test("It prints a string from the stack",
+         "01 00  43 44  01 00  41 42  4E 00  00 00",
+         "ABCD"
+    ),
+    Test("It prints a string from memory",
+         "01 00  41 42  01 00 00 00  04 00"
+         + "01 00  43 44  01 00  01 00  04 00"
+         + "01 00  00 00  01 00  02 00  04 00"
+         + "01 00  00 00  4F 00  00 00",
+         "ABCD"
+    ),
+
+
 ]
 
 read_tests = [
