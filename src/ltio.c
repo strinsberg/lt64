@@ -1,6 +1,7 @@
 #include "ltconst.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "stdbool.h"
 
 size_t read_program(WORD* mem, const char* filename) {
   // Open file
@@ -55,3 +56,37 @@ DWORDU print_string(WORD* mem, ADDRESS start, ADDRESS max) {
   }
   return start - atemp;
 }
+
+DWORDU read_string(WORD* mem, ADDRESS start, ADDRESS max) {
+  ADDRESS atemp = start;
+  bool first = true;
+  WORDU two_chars = 0;
+
+  while (atemp && start - atemp < max) {
+    char ch;
+    scanf("%c", &ch);
+    fprintf(stderr, "%c", ch);
+
+    if (ch == '\n') {
+      if (first) {
+        two_chars = 0;
+      } else {
+        two_chars &= 0xff;
+      }
+      mem[atemp] = two_chars;
+      return 1;
+
+    } else {
+      if (first) {
+        first = false;
+        two_chars = ch & 0xff;
+      } else {
+        first = true;
+        two_chars |= (ch << BYTE_SIZE);
+        mem[atemp--] = two_chars;
+      }
+    }
+  }
+  return 0;
+}
+

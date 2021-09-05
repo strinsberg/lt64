@@ -36,7 +36,7 @@ enum op_codes { HALT=0,
   PRNCH, PRN, PRNLN, PRNSP, PRNMEM,  // 4F
 
   WREAD, DREAD, FREAD, FREADSC,  // 53
-  READCH, READ, READLN, READSP,  // 57
+  READCH, READ_unused, READLN, READSP_unused,  // 57
 
   BFLOAD, BFSTORE,  // 59
   HIGH, LOW, UNPACK, PACK,  // 5D

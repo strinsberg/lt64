@@ -69,10 +69,41 @@ read_tests = [
     ### Read Number Tests ###
     vmtest.IoTest(
         "It reads in a word sized negative int",
-        "50 00",
+        "50 00  00 00",
         "-1",  # input
         "ffff"  # expected stack
     ),
+    vmtest.IoTest(
+        "It reads in a double word sized negative int",
+        "51 00  00 00",
+        "-1",
+        "ffff ffff"
+    ),
+    vmtest.IoTest(
+        "It reads in a fixed point number and default scales it",
+        "52 00  00 00",
+        "10.123",
+        "0000 278b"
+    ),
+    vmtest.IoTest(
+        "It reads in a fixed point number and user scales it",
+        "53 02  00 00",
+        "10.123",
+        "0000 03f4"
+    ),
+    vmtest.IoTest(
+        "It reads in a character",
+        "54 00  54 00  00 00",
+        "AB",
+        "0041 0042"
+    ),
+    vmtest.IoTest(
+        "It reads a string up to a space into the buffer.",
+        "56 00  4C 00  00 00",
+        "ABCD\n",
+        "ABCD"
+    ),
+
 ]
 
 if __name__=='__main__':

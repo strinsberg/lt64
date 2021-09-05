@@ -18,7 +18,6 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   WORDU utemp;
   DWORD dtemp;
   DWORDU udtemp;
-  long long ftemp;
   
   bool run = true;
   while (run) {
@@ -426,10 +425,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       case PRNSP:
         // Print from top of stack to first null and remove them
         utemp = print_string(data_stack, dsp, dsp);
-        while (utemp) {
-          dsp--;
-          utemp--;
-        }
+        dsp -= utemp;
         break;
       case PRNMEM:
         // Print from memory offset to first null
@@ -441,6 +437,40 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       case WREAD:
         scanf("%hd", &temp);
         data_stack[++dsp] = temp;
+        break;
+      case DREAD:
+        scanf("%d", &dtemp);
+        set_dword(data_stack, dsp + 1, dtemp);
+        dsp+=2;
+        break;
+      case FREAD:
+        {
+          double x;
+          scanf("%lf", &x);
+          set_dword(data_stack, dsp + 1, (DWORD)(x * SCALES[ DEFAULT_SCALE ]));
+          dsp+=2;
+        }
+        break;
+      case FREADSC:
+        {
+          temp = (memory[pc] >> BYTE_SIZE);
+          if (temp && temp < SCALE_MAX) {
+            dtemp = SCALES[temp];
+          } else {
+            dtemp = SCALES[ DEFAULT_SCALE ];
+          }
+          double x;
+          scanf("%lf", &x);
+          set_dword(data_stack, dsp + 1, (DWORD)(x * dtemp));
+          dsp+=2;
+        }
+        break;
+      case READCH:
+        scanf("%c", &temp);
+        data_stack[++dsp] = temp & 0xff;
+        break;
+      case READLN:
+        read_string(memory, bfp, BUFFER_SIZE);
         break;
 
       /// Buffer and Chars ///
