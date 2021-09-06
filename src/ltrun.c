@@ -519,6 +519,25 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         exec_strcopy(memory, data_stack, bfp, &dsp, memory[pc] >> BYTE_SIZE);
         break;
 
+      /// Fixed point arithmetic ///
+      // only for those operations that cannot be done by dword ops
+      case FMULT:
+        {
+          long long inter = (long long)get_dword(data_stack, dsp-3)
+                            * (long long)get_dword(data_stack, dsp-1);
+          dsp-=2;
+          set_dword(data_stack, dsp-1, inter / SCALES[ DEFAULT_SCALE ]);
+        }
+        break;
+      case FDIV:
+        {
+          double inter = (double)get_dword(data_stack, dsp-3)
+                         / (double)get_dword(data_stack, dsp-1);
+          dsp-=2;
+          set_dword(data_stack, dsp-1, inter * SCALES[ DEFAULT_SCALE ]);
+        }
+        break;
+
       /// BAD OP CODE ///
       default:
         fprintf(stderr, "Error: Unknown OP code: 0x%hx\n", memory[pc]);
