@@ -14,15 +14,23 @@ tests = [
         "bbaa aabb"
     ),
     Test(
-        "Load double words relative to top of memory",
-        "01 00  00 00  0F 00  01 00  01 00  0F 00  00 00",
-        "0000 0000 0000 0000"
+        "Store and load double words relative to top of memory",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc"
+        + "01 00  00 00  10 00  01 00  02 00  10 00"
+        + "01 00  00 00  0F 00  01 00  02 00  0F 00  00 00",
+        "ddcc ccdd bbaa aabb"
     ),
     Test(
-        "Store double words relative to top of memory",
-        "0D 00  aa bb bb aa  0D 00  cc dd dd cc  01 00  00 00  10 00"
-        + "0E 00  01 00  00 00  0F 00  00 00",
-        "ddcc ccdd"
+        "Load double words from memory",
+        "01 00  00 00  0F 01  01 00  02 00  0F 01  00 00",
+        "0001 0000 010f 0001"
+    ),
+    Test(
+        "Store double words in memory",
+        "0D 00  aa bb bb aa  0D 00  cc dd dd cc"
+        + "01 00  fe ff  10 01  01 00  fc ff  10 01"
+        + "01 00  00 00  0F 00  01 00  02 00  0F 00  00 00",
+        "ddcc ccdd bbaa aabb"
     ),
 
     ### Manipulation ###

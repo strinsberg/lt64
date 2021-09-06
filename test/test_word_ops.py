@@ -25,15 +25,23 @@ tests = [
         "aabb"
     ),
     Test(
-        "Load words relative to top of memory",
-        "01 00  00 00  03 00  01 00  01 00  03 00  00 00",
-        "0000 0000"
+        "Store and load words relative to top of memory",
+        "01 00 bb aa 01 00 dd cc"
+        + "01 00  00 00  04 00  01 00  01 00  04 00"
+        + "01 00  00 00  03 00  01 00  01 00  03 00  00 00",
+        "ccdd aabb"
     ),
     Test(
-        "Store words relative to top of memory",
-        "01 00 bb aa 01 00 dd cc  01 00  00 00  04 00"
-        + "02 00  01 00  00 00  03 00  00 00",
-        "ccdd"
+        "Load words at a given address",
+        "01 00  02 00  03 01  01 00  03 00  03 01  00 00",
+        "0103 0001"
+    ),
+    Test(
+        "Store words at a given address",
+        "01 00  bb aa  01 00  dd cc"
+        + "01 00  ff ff  04 01  01 00  fe ff  04 01"
+        + "01 00  00 00  03 00  01 00  01 00  03 00  00 00",
+        "ccdd aabb"
     ),
 
     ### Manipulation ###

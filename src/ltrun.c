@@ -35,10 +35,17 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         dsp--;
         break;
       case LOAD:
-        data_stack[dsp] = memory[END_MEMORY - data_stack[dsp]];
+        if (memory[pc] >> BYTE_SIZE & 1)
+          data_stack[dsp] = memory[(ADDRESS)data_stack[dsp]];
+        else
+          data_stack[dsp] = memory[END_MEMORY - (ADDRESS)data_stack[dsp]];
         break;
       case STORE:
-        memory[END_MEMORY - data_stack[dsp]] = data_stack[dsp-1];
+        if (memory[pc] >> BYTE_SIZE & 1) {
+          memory[(ADDRESS)data_stack[dsp]] = data_stack[dsp-1];
+        } else {
+          memory[END_MEMORY - (ADDRESS)data_stack[dsp]] = data_stack[dsp-1];
+        }
         dsp-=2;
         break;
       case FST:
@@ -83,13 +90,23 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case DLOAD:
         atemp = data_stack[dsp--];
-        data_stack[++dsp] = memory[END_MEMORY - atemp + 1];
-        data_stack[++dsp] = memory[END_MEMORY - atemp];
+        if (memory[pc] >> BYTE_SIZE) {
+          data_stack[++dsp] = memory[atemp];
+          data_stack[++dsp] = memory[atemp + 1];
+        } else {
+          data_stack[++dsp] = memory[END_MEMORY - (atemp + 1)];
+          data_stack[++dsp] = memory[END_MEMORY - atemp];
+        }
         break;
       case DSTORE:
         atemp = data_stack[dsp--];
-        memory[END_MEMORY - atemp] = data_stack[dsp];
-        memory[END_MEMORY - atemp + 1] = data_stack[dsp-1];
+        if (memory[pc] >> BYTE_SIZE) {
+          memory[atemp + 1] = data_stack[dsp];
+          memory[atemp] = data_stack[dsp-1];
+        } else {
+          memory[END_MEMORY - atemp] = data_stack[dsp];
+          memory[END_MEMORY - (atemp + 1)] = data_stack[dsp-1];
+        }
         dsp-=2;
         break;
       case DFST:
