@@ -474,7 +474,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
 
       /// Buffer and Chars ///
-      case BFLOAD:
+      case BFSTORE:
         temp = (memory[pc] >> BYTE_SIZE);
         if (temp) {
           memory[bfp - temp + 1] = data_stack[dsp--];
@@ -482,6 +482,32 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
           atemp = data_stack[dsp--];
           memory[bfp - atemp] = data_stack[dsp--];
         }
+        break;
+      case BFLOAD:
+        temp = (memory[pc] >> BYTE_SIZE);
+        if (temp) {
+          data_stack[++dsp] = memory[bfp - temp + 1];
+        } else {
+          atemp = data_stack[dsp];
+          data_stack[dsp] = memory[bfp - atemp];
+        }
+        break;
+      case HIGH:
+        data_stack[dsp+1] = (data_stack[dsp] >> BYTE_SIZE) & 0xff;
+        dsp++;
+        break;
+      case LOW:
+        data_stack[dsp+1] = data_stack[dsp] & 0xff;
+        dsp++;
+        break;
+      case UNPACK:
+        temp = data_stack[dsp];
+        data_stack[++dsp] =  (temp >> BYTE_SIZE) & 0xff;
+        data_stack[++dsp] = temp & 0xff;
+        break;
+      case PACK:
+        temp = data_stack[dsp--];
+        data_stack[dsp] = temp | (data_stack[dsp] << BYTE_SIZE);
         break;
 
       /// Memory copying ///

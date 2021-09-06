@@ -38,7 +38,7 @@ enum op_codes { HALT=0,
   WREAD, DREAD, FREAD, FREADSC,  // 53
   READCH, READ_unused, READLN, READSP_unused,  // 57
 
-  BFLOAD, BFSTORE,  // 59
+  BFSTORE, BFLOAD,  // 59
   HIGH, LOW, UNPACK, PACK,  // 5D
 
   MEMCOPY, STRCOPY, FMULT, FDIV,  // 61

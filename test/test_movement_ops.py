@@ -163,6 +163,63 @@ tests = [
         + "5F 05  4C 00  00 00",
         "ABCD"
     ),
+
+    ### Buffer and Chars ###
+    Test(
+        "Store words in the char buffer",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "4C 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Store words in the char buffer, using offset",
+        "01 00  41 42  58 01"
+        + "01 00  43 44  58 02"
+        + "4C 00  00 00",
+        "ABCD"
+    ),
+    Test(
+        "Load words in the char buffer",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "01 00  01 00  59 00"
+        + "01 00  00 00  59 00  00 00",
+        "4443 4241"
+    ),
+    Test(
+        "Load words in the char buffer, using offset",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "59 02  59 01  00 00",
+        "4443 4241"
+    ),
+    Test(
+        "High duplicates the high byte as a full word in the low byte pos",
+        "01 00  43 44  5A 00  00 00",
+        "4443 0044"
+    ),
+    Test(
+        "High duplicates without sign extension",
+        "01 00  43 ff  5A 00  00 00",
+        "ff43 00ff"
+    ),
+    Test(
+        "Low duplicates the low byte as a full word",
+        "01 00  43 44  5B 00  00 00",
+        "4443 0043"
+    ),
+    Test(
+        "Unpack the top word into high and low and push them onto stack",
+        "01 00  43 44  5C 00  00 00",
+        "4443 0044 0043"
+    ),
+    Test(
+        "Pack the low bytes of top 2 words into a single word on the stack",
+        "01 00  44 00  01 00  43 00  5D 00  00 00",
+        "4443"
+    ),
+
 ]
 
 
