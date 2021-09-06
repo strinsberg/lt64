@@ -537,6 +537,34 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
           set_dword(data_stack, dsp-1, inter * SCALES[ DEFAULT_SCALE ]);
         }
         break;
+      case FMULTSC:
+        {
+          temp = (memory[pc] >> BYTE_SIZE);
+          if (temp && temp < SCALE_MAX) {
+            dtemp = SCALES[temp];
+          } else {
+            dtemp = SCALES[ DEFAULT_SCALE ];
+          }
+          long long inter = (long long)get_dword(data_stack, dsp-3)
+                            * (long long)get_dword(data_stack, dsp-1);
+          dsp-=2;
+          set_dword(data_stack, dsp-1, inter / dtemp);
+        }
+        break;
+      case FDIVSC:
+        {
+          temp = (memory[pc] >> BYTE_SIZE);
+          if (temp && temp < SCALE_MAX) {
+            dtemp = SCALES[temp];
+          } else {
+            dtemp = SCALES[ DEFAULT_SCALE ];
+          }
+          double inter = (double)get_dword(data_stack, dsp-3)
+                         / (double)get_dword(data_stack, dsp-1);
+          dsp-=2;
+          set_dword(data_stack, dsp-1, inter * dtemp);
+        }
+        break;
 
       /// BAD OP CODE ///
       default:

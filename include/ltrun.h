@@ -41,7 +41,8 @@ enum op_codes { HALT=0,
   BFSTORE, BFLOAD,  // 59
   HIGH, LOW, UNPACK, PACK,  // 5D
 
-  MEMCOPY, STRCOPY, FMULT, FDIV,  // 61
+  MEMCOPY, STRCOPY,  // 5F
+  FMULT, FDIV, FMULTSC, FDIVSC,  // 63
 };
 
 enum copy_codes {
