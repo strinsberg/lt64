@@ -12,6 +12,10 @@ EXIT_SOF = 4;
 EXIT_SUF = 5;
 EXIT_POB = 6;
 EXIT_OP = 7;
+EXIT_STR = 8;
+EXIT_ARGS = 9;
+EXIT_RSOF = 10;
+EXIT_RSUF = 11;
 
 ### Test Classes ###
 class VmTests(TestSuite):

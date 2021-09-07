@@ -23,6 +23,16 @@ tests = [
         "01 00  aa aa  3D 00  00 00",
         vmtest.EXIT_POB
     ),
+    Test(
+        "Return stack overflow",
+        "01 00  aa aa  0A 00  01 00  00 00  3D 00  00 00",
+        vmtest.EXIT_RSOF
+    ),
+    Test(
+        "Return stack underflow",
+        "0B 00  00 00",
+        vmtest.EXIT_RSUF
+    ),
 ]
 
 

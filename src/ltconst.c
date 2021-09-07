@@ -42,4 +42,6 @@ const size_t EXIT_POB = 6;
 const size_t EXIT_OP = 7;
 const size_t EXIT_STR = 8;
 const size_t EXIT_ARGS = 9;
+const size_t EXIT_RSOF = 10;
+const size_t EXIT_RSUF = 11;
 

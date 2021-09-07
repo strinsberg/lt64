@@ -36,5 +36,7 @@ extern const size_t EXIT_POB;
 extern const size_t EXIT_OP;
 extern const size_t EXIT_STR;
 extern const size_t EXIT_ARGS;
+extern const size_t EXIT_RSOF;
+extern const size_t EXIT_RSUF;
 
 #endif

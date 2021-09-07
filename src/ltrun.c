@@ -27,12 +27,20 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
               "Error: program counter out of bounds, pc: %hx, bfp: %hd\n",
               pc, bfp);
       exit (EXIT_POB);
-    } else if (dsp > 0x8000) {  // i.e. it has wrapped around into negative numbers
+    } else if (dsp > 0x8000) {  // i.e. it has wrapped around into negatives
       fprintf(stderr, "Error: stack underflow, sp: %hx or %hd\n", dsp, dsp);
       exit (EXIT_SUF);
     } else if (dsp > END_STACK) {
       fprintf(stderr, "Error: stack overflow, sp: %hx or %hd\n", dsp, dsp);
       exit (EXIT_SOF);
+    } else if (rsp > 0x8000) {  // i.e. it has wrapped around into negatives
+      fprintf(stderr, "Error: return stack underflow, sp: %hx or %hd\n",
+              rsp, rsp);
+      exit (EXIT_RSUF);
+    } else if (rsp > END_RETURN) {
+      fprintf(stderr, "Error: return stack overflow, sp: %hx or %hd\n",
+              rsp, rsp);
+      exit (EXIT_RSOF);
     }
 
     switch (memory[pc] & 0xff) {
