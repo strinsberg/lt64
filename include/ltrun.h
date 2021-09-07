@@ -30,10 +30,10 @@ enum op_codes { HALT=0,
   DAND, DOR, DNOT,  // 3C
 
   JUMP, BRANCH, CALL, RET,  // 40
-  DSP, PC, BFP, FRP_unused,  // 44
+  DSP, PC, BFP, FMP,  // 44
 
   WPRN, DPRN, WPRNU, DPRNU, FPRN, FPRNSC,  // 4A
-  PRNCH, PRN, PRNLN, PRNSP, PRNMEM,  // 4F
+  PRNCH, PRN, PRNLN, PRNSP_unused, PRNMEM,  // 4F
 
   WREAD, DREAD, FREAD, FREADSC,  // 53
   READCH, READ_unused, READLN, READSP_unused,  // 57
@@ -45,18 +45,9 @@ enum op_codes { HALT=0,
   FMULT, FDIV, FMULTSC, FDIVSC,  // 63
 };
 
-enum copy_codes {
-  MEM_BUF = 0, MEM_DS,
-  BUF_MEM, BUF_DS,
-  DS_MEM, DS_BUF,
-};
+enum copy_codes { MEM_BUF = 0, BUF_MEM };
 
 
 size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack);
-void exec_memcopy(WORD* memory, WORD* data_stack,
-                  ADDRESS bfp, ADDRESS* dsp,
-                  WORDU size, WORD code);
-void exec_strcopy(WORD* memory, WORD* data_stack,
-                  ADDRESS bfp, ADDRESS* dsp, WORD code);
 
 #endif

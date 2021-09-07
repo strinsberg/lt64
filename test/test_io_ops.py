@@ -46,14 +46,6 @@ tests = [
          + "4D 00  00 00",
          "ABCD\n"
     ),
-    Test("It prints a string from the stack",
-         "01 00  00 00  01 00  43 44  01 00  41 42  4E 00  00 00",
-         "ABCD"
-    ),
-    Test("It prints a string from the stack, stack runs out",
-         "01 00  43 44  01 00  41 42  4E 00  00 00",
-         "ABCD"
-    ),
     Test("It prints a string from memory",
          "01 00  41 42  01 00 00 00  04 00"
          + "01 00  43 44  01 00  01 00  04 00"

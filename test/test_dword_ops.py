@@ -21,15 +21,15 @@ tests = [
         "ddcc ccdd bbaa aabb"
     ),
     Test(
-        "Load double words from memory",
+        "Load double words from a specific address",
         "01 00  00 00  0F 01  01 00  02 00  0F 01  00 00",
         "0001 0000 010f 0001"
     ),
     Test(
-        "Store double words in memory",
+        "Store and load double words at a specific address",
         "0D 00  aa bb bb aa  0D 00  cc dd dd cc"
         + "01 00  fe ff  10 01  01 00  fc ff  10 01"
-        + "01 00  00 00  0F 00  01 00  02 00  0F 00  00 00",
+        + "01 00  fe ff  0F 01  01 00  fc ff  0F 01  00 00",
         "ddcc ccdd bbaa aabb"
     ),
 

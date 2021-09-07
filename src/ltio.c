@@ -40,29 +40,29 @@ void display_range(WORD* mem, ADDRESS start, ADDRESS end) {
   printf("\n");
 }
 
-DWORDU print_string(WORD* mem, ADDRESS start, ADDRESS max) {
+void print_string(WORD* mem, ADDRESS start, ADDRESS max) {
   ADDRESS atemp = start;
-  while (atemp && start - atemp < max) {
+  while (atemp < max) {
     WORD chars = mem[atemp];
     WORD low = chars & 0xff;
     WORD high = chars >> BYTE_SIZE;
-    if (!low)
-      return start - (atemp - 1);
+
+    if (!low) break;
     printf("%c", low);
-    if (!high)
-      return start - (atemp - 1);
+
+    if (!high) break;
     printf("%c", high);
-    atemp--;
+
+    atemp++;
   }
-  return start - atemp;
 }
 
-DWORDU read_string(WORD* mem, ADDRESS start, ADDRESS max) {
+void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
   ADDRESS atemp = start;
   bool first = true;
   WORDU two_chars = 0;
 
-  while (atemp && start - atemp < max) {
+  while (atemp < max - 1) {
     char ch;
     scanf("%c", &ch);
     fprintf(stderr, "%c", ch);
@@ -74,7 +74,8 @@ DWORDU read_string(WORD* mem, ADDRESS start, ADDRESS max) {
         two_chars &= 0xff;
       }
       mem[atemp] = two_chars;
-      return 1;
+      mem[atemp + 1] = 0;
+      break;
 
     } else {
       if (first) {
@@ -83,10 +84,9 @@ DWORDU read_string(WORD* mem, ADDRESS start, ADDRESS max) {
       } else {
         first = true;
         two_chars |= (ch << BYTE_SIZE);
-        mem[atemp--] = two_chars;
+        mem[atemp++] = two_chars;
       }
     }
   }
-  return 0;
 }
 
