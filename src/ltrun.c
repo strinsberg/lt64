@@ -22,6 +22,11 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   
   bool run = true;
   while (run) {
+    if (DEBUGGING) {
+      display_range(data_stack, 0x0001, dsp + 1);
+      fprintf(stderr, "mem[pc]: %hx, pc=%hx\n\n", memory[pc], pc);
+    }
+
     if (pc >= bfp) {
       fprintf(stderr,
               "Error: program counter out of bounds, pc: %hx, bfp: %hx\n",
