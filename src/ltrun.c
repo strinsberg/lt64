@@ -24,7 +24,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   while (run) {
     if (pc >= bfp) {
       fprintf(stderr,
-              "Error: program counter out of bounds, pc: %hx, bfp: %hd\n",
+              "Error: program counter out of bounds, pc: %hx, bfp: %hx\n",
               pc, bfp);
       exit (EXIT_POB);
     } else if (dsp > 0x8000) {  // i.e. it has wrapped around into negatives
@@ -378,24 +378,29 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Movement ///
       case JUMP:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (temp) {
-          pc += temp;
+        utemp = (memory[pc] >> BYTE_SIZE);
+        if (utemp) {
+          pc += utemp;
         } else {
           pc = data_stack[dsp--];
         }
         continue;
       case BRANCH:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (data_stack[dsp--]) {
+        utemp = (memory[pc] >> BYTE_SIZE);
+        if (utemp) {
+          temp = data_stack[dsp--];
           if (temp) {
-            pc += temp;
-          } else {
-            pc = data_stack[dsp--];
+            pc += utemp;
+            continue;
           }
-          continue;
+        } else {
+          atemp = data_stack[dsp--];
+          temp = data_stack[dsp--];
+          if (temp) {
+            pc = atemp;
+            continue;
+          }
         }
-        if (!temp) dsp--;
         break;
       case CALL:
         return_stack[++rsp] = pc + 1;
@@ -439,6 +444,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         dsp-=2;
         break;
       case FPRNSC:
+        // TODO no way to get scale off of stack?
         temp = (memory[pc] >> BYTE_SIZE);
         if (temp && temp < SCALE_MAX) {
           dtemp = SCALES[temp];
@@ -489,6 +495,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case FREADSC:
         {
+          // TODO no way to get scale off of stack?
           temp = (memory[pc] >> BYTE_SIZE);
           if (temp && temp < SCALE_MAX) {
             dtemp = SCALES[temp];
@@ -603,6 +610,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case FMULTSC:
         {
+          // TODO no way to get scale of stack?
           temp = (memory[pc] >> BYTE_SIZE);
           if (temp && temp < SCALE_MAX) {
             dtemp = SCALES[temp];
@@ -617,6 +625,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case FDIVSC:
         {
+          // TODO no way to get scale of stack?
           temp = (memory[pc] >> BYTE_SIZE);
           if (temp && temp < SCALE_MAX) {
             dtemp = SCALES[temp];

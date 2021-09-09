@@ -17,8 +17,8 @@ tests = [
 
     ### Branch ###
     Test(
-        "Branches to the address at top - 1 when top is non zero (true)",
-        "01 00  07 00  01 00  01 00  3E 00  01 00  aa aa  01 00  bb bb  00 00",
+        "Branches to the address at top when top - 1 is non zero (true)",
+        "01 00  01 00  01 00  07 00  3E 00  01 00  aa aa  01 00  bb bb  00 00",
         "bbbb"
     ),
     Test(
@@ -28,7 +28,7 @@ tests = [
     ),
     Test(
         "Doesn't Branch to when top is zero (false)",
-        "01 00  07 00  01 00  00 00  3E 00  01 00  aa aa  01 00  bb bb  00 00",
+        "01 00  00 00  01 00  07 00  3E 00  01 00  aa aa  01 00  bb bb  00 00",
         "aaaa bbbb"
     ),
     Test(
