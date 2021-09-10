@@ -1,3 +1,12 @@
+"""
+Tests for movement operations on the lieutenant-64 virtual machine.
+
+See the test_words.py file for some more information on how test input and
+output is written.
+
+See the lieutenant-64 README for more information on what each operation
+does.
+"""
 from clitest import Test
 import vmtest
 

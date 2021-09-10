@@ -1,16 +1,34 @@
+"""
+Tests for word operations on the lieutenant-64 virtual machine.
+
+Test input is given as a hex string specifying the bytes of the program the
+VM will read. These can be given with spaces between bytes or words and all
+spaces and newlines will be stripped before converting the hex to bytes and
+writing to a file.
+
+Bytes are given in little endian order. This means that for a word the bytes
+are given low byte then high byte. I.e. to get the hex number aabb you need
+to write the least significant byte first. So it would be 'bb aa' in a string
+for program input. However, somewhat contrary to this double words are stored
+on the stack and in memory with the most significant word first and the least
+significant word on top. I.e when putting the double word aabbccdd as an
+argument to DPUSH it would be split into the two words aabb and ccdd. The
+order is correct for word with just this split, but then each word must be
+reordered as specified above. Meaning the final result would be 'bb aa  dd cc'.
+The spaces are optional, but given the rules for ordering it makes sense to
+use them to separate bytes and words. Most of the tests try to have 1 space
+between the bytes of a word and 2 spaces between words.
+
+Now to add to the confusion of the bytes the stacks are printed bottom to top
+and each word is printed as any normal number with it's most significant digits
+first. So if we push 'aa bb' onto the stack it will be printed out 'bbaa'. This
+output makes sense as it is just printing a 16 bit number in hex, but it will
+seem backward to the input.
+
+For more information on how each operation works see the lieutenant-64 README.
+"""
 from clitest import Test
 import vmtest
-
-# NOTE the little endian order of each 16 bit word. 2 spaces are used
-# to separate each word and 1 to separate the bytes since their order is
-# backward we don't want them connected or it is confusing (more so)
-
-# NOTE stack output is now  bottom -> top
-
-# NOTE load and store use addresses that are relative to the top of memory
-# and move down. So you need to address them 0, 1, 2, etc.
-
-# NOTE nth is 0 based, even though it is a little awkward with fst and sec
 
 tests = [
     ### Standard ops ###
@@ -296,14 +314,5 @@ tests = [
         "01 00  f0 f0  2A 00  00 00",
         "0f0f"
     ),
-
 ]
-
-
-if __name__=='__main__':
-    vmtest.VmTests("Handles WORD operations",
-                   vmtest.EXEC_NAME,
-                   tests=tests,
-                   program_source=vmtest.INPUT_FILE,
-                   compile_command=vmtest.COMPILE_FOR_TESTS).run()
 

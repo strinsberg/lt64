@@ -1,3 +1,12 @@
+"""
+Tests for double word operations on the lieutenant-64 virtual machine.
+
+See the test_words.py file for some more information on how test input and
+output is written.
+
+See the lieutenant-64 README for more information on what each operation
+does.
+"""
 from clitest import Test
 import vmtest
 
@@ -319,11 +328,4 @@ tests = [
     ),
 
 ]
-
-if __name__=='__main__':
-    vmtest.VmTests("It handles WORD operations",
-                   vmtest.EXEC_NAME,
-                   tests=tests,
-                   program_source=vmtest.INPUT_FILE,
-                   compile_command=vmtest.COMPILE_FOR_TESTS).run()
 
