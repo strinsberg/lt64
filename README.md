@@ -113,8 +113,6 @@ Tests Failed: 1
 
 # Assembler
 
-[Assembler](https://www.notion.so/Assembler-cf05604841cf4607b2f93dbb15020a94)
-
 The assembler for this project is available in another [repository](https://github.com/strinsberg/lt64-asm). It uses a LISP style syntax and is written in Clojure. The assembler makes it possible to specify labeled static program data that can be initialized with optional values or just declared to make space for use in the program. It also supports writing procedures in separate module files and including them in a program or module. More detailed information can be found in the assembler's repository.
 
 # Architecture
