@@ -19,12 +19,14 @@ extern const bool DEBUGGING;
 extern const ADDRESS END_MEMORY;
 extern const ADDRESS END_RETURN;
 extern const ADDRESS END_STACK;
-extern const WORD WORD_SIZE;
-extern const WORD BYTE_SIZE;
-extern const WORD BUFFER_SIZE;
-extern const WORD DEFAULT_SCALE;
-extern const WORDU SCALE_MAX;
-extern const DWORD SCALES[];
+
+extern const WORDU WORD_SIZE;         // number of bytes in a word
+extern const WORDU BYTE_SIZE;         // number of bits in a byte
+extern const WORDU BUFFER_SIZE;       // number of words in the buffer
+
+extern const WORDU DEFAULT_SCALE;     // index of default scale in scales
+extern const WORDU SCALE_MAX;         // length of the scales array
+extern const DWORDU SCALES[];         // scaling factors i.e. 10, 100 ...
 
 // Exit codes //
 extern const size_t EXIT_MEM;

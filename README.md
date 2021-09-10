@@ -221,7 +221,7 @@ Pop the top two stack elements and push the result onto the stack. **multu** tre
 
 All versions pop the top two stack elements and divide the top - 1 stack element by the top. This is integer division as done in C so values that would result in fractions are rounded toward `0`. That means `-1.23` will be `-1` **NOT** `-2`. Use the unsigned versions if the values are being treated as unsigned. For example `0x10 / 0xff(-1)` is `0xf0(-16)` when signed, but it is just `0x00` when unsigned as `0xff` is much larger than `0x10`.
 
-### mod, dmod, dmod, dmodu
+### mod, dmod, modu, dmodu
 
 Pops the top two stack elements and takes top - 1 stack element mod by the top.
 

@@ -81,7 +81,7 @@ void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
       }
       mem[atemp] = two_chars;
       mem[atemp + 1] = 0;
-      break;
+      return;
 
     } else {
       if (first) {
@@ -94,5 +94,6 @@ void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
       }
     }
   }
+  mem[atemp + 1] = 0;
 }
 

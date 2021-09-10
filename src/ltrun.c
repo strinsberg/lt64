@@ -7,6 +7,7 @@
 #include "string.h"
 
 size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack) {
+  // Declare and initialize memory pointer "registers"
   ADDRESS dsp, rsp, pc, bfp, fmp;
   dsp = 0;
   rsp = 0;
@@ -14,14 +15,17 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   bfp = length;
   fmp = length + BUFFER_SIZE;
 
+  // Declare some temporary "registers" for working with intermediate values
   ADDRESS atemp;
   WORD temp;
   WORDU utemp;
   DWORD dtemp;
   DWORDU udtemp;
   
+  // Run the program in memory
   bool run = true;
   while (run) {
+    // Print stack, op code, and pc before every execution
     if (DEBUGGING) {
       fprintf(stderr, "Stack: ");
       display_range(data_stack, 0x0001, dsp + 1, DEBUGGING);
@@ -29,27 +33,34 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
               memory[pc], memory[pc], pc, pc);
     }
 
+    // Catch some common pointer/address errors
     if (pc >= bfp) {
       fprintf(stderr,
               "Error: program counter out of bounds, pc: %hx, bfp: %hx\n",
               pc, bfp);
-      exit (EXIT_POB);
+      return EXIT_POB;
     } else if (dsp > 0x8000) {  // i.e. it has wrapped around into negatives
       fprintf(stderr, "Error: stack underflow, sp: %hx (%hd)\n", dsp, dsp);
-      exit (EXIT_SUF);
+      return EXIT_SUF;
     } else if (dsp > END_STACK) {
       fprintf(stderr, "Error: stack overflow, sp: %hx (%hd)\n", dsp, dsp);
-      exit (EXIT_SOF);
+      return EXIT_SOF;
     } else if (rsp > 0x8000) {  // i.e. it has wrapped around into negatives
       fprintf(stderr, "Error: return stack underflow, sp: %hx (%hd)\n",
               rsp, rsp);
-      exit (EXIT_RSUF);
+      return EXIT_RSUF;
     } else if (rsp > END_RETURN) {
       fprintf(stderr, "Error: return stack overflow, sp: %hx (%hd)\n",
               rsp, rsp);
-      exit (EXIT_RSOF);
+      return EXIT_RSOF;
     }
 
+    // Switch to cover each opcode. It is too long, but for simplicity and
+    // efficiency it is kept this way, with larger operations calling
+    // functions. The functions for things like unpacking and packing
+    // double words are declared as inline so they will be more efficient.
+    // Larger functions for things like io operations are regular functions
+    // because they are not really hurt by the function call.
     switch (memory[pc] & 0xff) {
       case HALT:
         run = false;
@@ -649,12 +660,15 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       /// BAD OP CODE ///
       default:
         fprintf(stderr, "Error: Unknown OP code: 0x%hx\n", memory[pc]);
-        exit(EXIT_OP);
+        return EXIT_OP;
     }
     pc++;
   }
 
-  // Test output
+  // When program is run for tests we print out the contents of the stack
+  // to stdout to check that the program ended in the expected state.
+  // Because we always increment dsp before pushing a value the true start of
+  // the stack is index 1 and not 0.
   if (TESTING) {
     display_range(data_stack, 0x0001, dsp + 1, false);
   }
