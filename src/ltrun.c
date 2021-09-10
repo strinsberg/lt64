@@ -23,8 +23,10 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   bool run = true;
   while (run) {
     if (DEBUGGING) {
-      display_range(data_stack, 0x0001, dsp + 1);
-      fprintf(stderr, "mem[pc]: %hx, pc=%hx\n\n", memory[pc], pc);
+      fprintf(stderr, "Stack: ");
+      display_range(data_stack, 0x0001, dsp + 1, DEBUGGING);
+      fprintf(stderr, "OP: %hx (%hu)\nPC: %hx (%hu)\n\n",
+              memory[pc], memory[pc], pc, pc);
     }
 
     if (pc >= bfp) {
@@ -33,17 +35,17 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
               pc, bfp);
       exit (EXIT_POB);
     } else if (dsp > 0x8000) {  // i.e. it has wrapped around into negatives
-      fprintf(stderr, "Error: stack underflow, sp: %hx or %hd\n", dsp, dsp);
+      fprintf(stderr, "Error: stack underflow, sp: %hx (%hd)\n", dsp, dsp);
       exit (EXIT_SUF);
     } else if (dsp > END_STACK) {
-      fprintf(stderr, "Error: stack overflow, sp: %hx or %hd\n", dsp, dsp);
+      fprintf(stderr, "Error: stack overflow, sp: %hx (%hd)\n", dsp, dsp);
       exit (EXIT_SOF);
     } else if (rsp > 0x8000) {  // i.e. it has wrapped around into negatives
-      fprintf(stderr, "Error: return stack underflow, sp: %hx or %hd\n",
+      fprintf(stderr, "Error: return stack underflow, sp: %hx (%hd)\n",
               rsp, rsp);
       exit (EXIT_RSUF);
     } else if (rsp > END_RETURN) {
-      fprintf(stderr, "Error: return stack overflow, sp: %hx or %hd\n",
+      fprintf(stderr, "Error: return stack overflow, sp: %hx (%hd)\n",
               rsp, rsp);
       exit (EXIT_RSOF);
     }
@@ -654,7 +656,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
   // Test output
   if (TESTING) {
-    display_range(data_stack, 0x0001, dsp + 1);
+    display_range(data_stack, 0x0001, dsp + 1, false);
   }
 
   return EXIT_SUCCESS;
