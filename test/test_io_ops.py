@@ -53,6 +53,10 @@ tests = [
          "01 00  43 44  01 00  41 42  4B 00  4B 00  00 00",
          "AC"
     ),
+    Test("Prints packed characters",
+         "01 00  43 44  01 00  41 42  64 00  64 00  00 00",
+         "ABCD"
+    ),
     Test("Prints a string from the buffer",
          "01 00  41 42  01 00  00 00  58 00"
          + "01 00  43 44  01 00  01 00  58 00"

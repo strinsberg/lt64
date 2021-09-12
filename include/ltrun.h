@@ -48,6 +48,8 @@ enum op_codes { HALT=0,
 
   MEMCOPY, STRCOPY,  // 5F
   FMULT, FDIV, FMULTSC, FDIVSC,  // 63
+
+  PRNPK,
 };
 
 // Some additional codes to track the direction of memory copies

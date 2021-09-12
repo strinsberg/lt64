@@ -1,5 +1,5 @@
 CC= gcc
-CC_FLAGS = -I include
+CC_FLAGS = -I include -Wall
 CC_RELEASE_FLAGS = -o lt64 -O3
 CC_DEBUG_FLAGS= -o lt64-debug -Og -D DEBUG
 CC_TEST_FLAGS= -o lt64-test -Og -D TEST

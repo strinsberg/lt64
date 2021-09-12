@@ -20,7 +20,6 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   WORD temp;
   WORDU utemp;
   DWORD dtemp;
-  DWORDU udtemp;
   
   // Run the program in memory
   bool run = true;
@@ -443,6 +442,11 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       case PRNCH:
         printf("%c", data_stack[dsp--] & 0xff);
         break;
+      case PRNPK:
+        temp = data_stack[dsp--];
+        printf("%c", temp & 0xff);
+        printf("%c", (temp >> BYTE_SIZE) & 0xff);
+        break;
       case PRN:
         // Print from bfp to first null or buffer end
         print_string(memory, bfp, fmp);
@@ -495,8 +499,11 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         }
         break;
       case READCH:
-        scanf("%c", &temp);
-        data_stack[++dsp] = temp & 0xff;
+        {
+          char ch;
+          scanf("%c", &ch);
+          data_stack[++dsp] = (WORD)ch & 0xff;
+        }
         break;
       case READLN:
         read_string(memory, bfp, fmp);
