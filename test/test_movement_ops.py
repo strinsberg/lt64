@@ -18,11 +18,6 @@ tests = [
         "01 00  05 00  3D 00  01 00  aa aa  01 00  bb bb  00 00",
         "bbbb"
     ),
-    Test(
-        "Jumps by offset in top byte and not a stack element",
-        "3D 03  01 00  aa aa  01 00  bb bb  00 00",
-        "bbbb"
-    ),
 
     ### Branch ###
     Test(
@@ -31,18 +26,8 @@ tests = [
         "bbbb"
     ),
     Test(
-        "Branches by a given offset when top is non zero (true)",
-        "01 00  01 00  3E 03  01 00  aa aa  01 00  bb bb  00 00",
-        "bbbb"
-    ),
-    Test(
         "Doesn't Branch to when top is zero (false)",
         "01 00  00 00  01 00  07 00  3E 00  01 00  aa aa  01 00  bb bb  00 00",
-        "aaaa bbbb"
-    ),
-    Test(
-        "Doesn't Branch to when top is zero (false), offset",
-        "01 00  00 00  3E 03  01 00  aa aa  01 00  bb bb  00 00",
         "aaaa bbbb"
     ),
 
@@ -60,19 +45,9 @@ tests = [
         "aaaa 0001"
     ),
     Test(
-        "Pushes the data stack pointer address onto the stack + offset",
-        "01 00  aa aa  41 05  00 00",
-        "aaaa 0006"
-    ),
-    Test(
         "Pushes the program counter address onto the stack",
         "01 00  aa aa  42 00  00 00",
         "aaaa 0002"
-    ),
-    Test(
-        "Pushes the program counter address onto the stack + offset",
-        "01 00  aa aa  42 05  00 00",
-        "aaaa 0007"
     ),
     Test(
         "Pushes the char buffer address onto the stack",
@@ -80,19 +55,9 @@ tests = [
         "aaaa 0004"
     ),
     Test(
-        "Pushes the char buffer address onto the stack + offset",
-        "01 00  aa aa  43 05  00 00",
-        "aaaa 0009"
-    ),
-    Test(
         "Pushes the free memory address onto the stack + offset",
         "01 00  aa aa  44 00  00 00",
         "aaaa 0404"
-    ),
-    Test(
-        "Pushes the free memory address onto the stack + offset",
-        "01 00  aa aa  44 05  00 00",
-        "aaaa 0409"
     ),
 
     ## Memory copying ##
@@ -136,25 +101,11 @@ tests = [
         "ABCD"
     ),
     Test(
-        "Store words in the char buffer, using offset",
-        "01 00  41 42  58 01"
-        + "01 00  43 44  58 02"
-        + "4C 00  00 00",
-        "ABCD"
-    ),
-    Test(
         "Load words in the char buffer",
         "01 00  41 42  01 00  00 00  58 00"
         + "01 00  43 44  01 00  01 00  58 00"
         + "01 00  01 00  59 00"
         + "01 00  00 00  59 00  00 00",
-        "4443 4241"
-    ),
-    Test(
-        "Load words in the char buffer, using offset",
-        "01 00  41 42  01 00  00 00  58 00"
-        + "01 00  43 44  01 00  01 00  58 00"
-        + "59 02  59 01  00 00",
         "4443 4241"
     ),
     Test(

@@ -44,7 +44,7 @@ tests = [
          "10.123"
     ),
     Test("Prints a fixed point number with given scaling",
-         "0D 00  12 00  A6 D6  4A 02  00 00",
+         "0D 00  12 00  A6 D6  01 00  02 00  4A 00  00 00",
          "12345.98"
     ),
 
@@ -54,12 +54,14 @@ tests = [
          "AC"
     ),
     Test("Prints a string from the buffer",
-         "01 00  41 42  58 01  01 00  43 44  58 02"
+         "01 00  41 42  01 00  00 00  58 00"
+         + "01 00  43 44  01 00  01 00  58 00"
          + "4C 00  00 00",
          "ABCD"
     ),
     Test("Prints a string from the buffer with a new line",
-         "01 00  41 42  58 01  01 00  43 44  58 02"
+         "01 00  41 42  01 00  00 00  58 00"
+         + "01 00  43 44  01 00  01 00  58 02"
          + "4D 00  00 00",
          "ABCD\n"
     ),
@@ -96,7 +98,7 @@ read_tests = [
     ),
     vmtest.IoTest(
         "Reads in a fixed point number and user scale it",
-        "53 02  00 00",
+        "01 00  02 00  53 02  00 00",
         "10.123",
         "0000 03f4"
     ),

@@ -330,22 +330,12 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Bitwise words ///
       case SL:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (temp) {
-          data_stack[dsp] = data_stack[dsp] << temp;
-        } else {
-          data_stack[dsp-1] = data_stack[dsp-1] << data_stack[dsp];
-          dsp--;
-        }
+        data_stack[dsp-1] = data_stack[dsp-1] << data_stack[dsp];
+        dsp--;
         break;
       case SR:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (temp) {
-          data_stack[dsp] = data_stack[dsp] >> temp;
-        } else {
-          data_stack[dsp-1] = data_stack[dsp-1] >> data_stack[dsp];
-          dsp--;
-        }
+        data_stack[dsp-1] = data_stack[dsp-1] >> data_stack[dsp];
+        dsp--;
         break;
       case AND:
         data_stack[dsp-1] = data_stack[dsp-1] & data_stack[dsp];
@@ -361,24 +351,14 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Bitwise double words ///
       case DSL:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (temp) {
-          set_dword(data_stack, dsp-1, get_dword(data_stack, dsp-1) << temp);
-        } else {
-          set_dword(data_stack, dsp-2, get_dword(data_stack, dsp-2)
-                                       << data_stack[dsp]);
-          dsp--;
-        }
+        set_dword(data_stack, dsp-2, get_dword(data_stack, dsp-2)
+                                     << data_stack[dsp]);
+        dsp--;
         break;
       case DSR:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (temp) {
-          set_dword(data_stack, dsp-1, get_dword(data_stack, dsp-1) >> temp);
-        } else {
-          set_dword(data_stack, dsp-2, get_dword(data_stack, dsp-2)
-                                       >> data_stack[dsp]);
-          dsp--;
-        }
+        set_dword(data_stack, dsp-2, get_dword(data_stack, dsp-2)
+                                     >> data_stack[dsp]);
+        dsp--;
         break;
       case DAND:
         set_dword(data_stack, dsp-3, get_dword(data_stack, dsp-3)
@@ -396,28 +376,14 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Movement ///
       case JUMP:
-        utemp = (memory[pc] >> BYTE_SIZE);
-        if (utemp) {
-          pc += utemp;
-        } else {
-          pc = data_stack[dsp--];
-        }
+        pc = data_stack[dsp--];
         continue;
       case BRANCH:
-        utemp = (memory[pc] >> BYTE_SIZE);
-        if (utemp) {
-          temp = data_stack[dsp--];
-          if (temp) {
-            pc += utemp;
-            continue;
-          }
-        } else {
-          atemp = data_stack[dsp--];
-          temp = data_stack[dsp--];
-          if (temp) {
-            pc = atemp;
-            continue;
-          }
+        atemp = data_stack[dsp--];
+        temp = data_stack[dsp--];
+        if (temp) {
+          pc = atemp;
+          continue;
         }
         break;
       case CALL:
@@ -428,17 +394,17 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         pc = return_stack[rsp--];
         continue;
       case DSP:
-        data_stack[dsp+1] = dsp + (memory[pc] >> BYTE_SIZE);
+        data_stack[dsp+1] = dsp;
         dsp++;
         break;
       case PC:
-        data_stack[++dsp] = pc + (memory[pc] >> BYTE_SIZE);
+        data_stack[++dsp] = pc;
         break;
       case BFP:
-        data_stack[++dsp] = bfp + (memory[pc] >> BYTE_SIZE);
+        data_stack[++dsp] = bfp;
         break;
       case FMP:
-        data_stack[++dsp] = fmp + (memory[pc] >> BYTE_SIZE);
+        data_stack[++dsp] = fmp;
         break;
 
       /// Number Printing ///
@@ -462,8 +428,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         dsp-=2;
         break;
       case FPRNSC:
-        // TODO no way to get scale off of stack?
-        temp = (memory[pc] >> BYTE_SIZE);
+        temp = data_stack[dsp--];
         if (temp && temp < SCALE_MAX) {
           dtemp = SCALES[temp];
         } else {
@@ -517,7 +482,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       case FREADSC:
         {
           // TODO no way to get scale off of stack?
-          temp = (memory[pc] >> BYTE_SIZE);
+          temp = data_stack[dsp--];
           if (temp && temp < SCALE_MAX) {
             dtemp = SCALES[temp];
           } else {
@@ -539,22 +504,12 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Buffer and Chars ///
       case BFSTORE:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (temp) {
-          memory[bfp + (temp - 1)] = data_stack[dsp--];
-        } else {
-          atemp = data_stack[dsp--];
-          memory[bfp + atemp] = data_stack[dsp--];
-        }
+        atemp = data_stack[dsp--];
+        memory[bfp + atemp] = data_stack[dsp--];
         break;
       case BFLOAD:
-        temp = (memory[pc] >> BYTE_SIZE);
-        if (temp) {
-          data_stack[++dsp] = memory[bfp + (temp - 1)];
-        } else {
-          atemp = data_stack[dsp];
-          data_stack[dsp] = memory[bfp + atemp];
-        }
+        atemp = data_stack[dsp];
+        data_stack[dsp] = memory[bfp + atemp];
         break;
       case HIGH:
         data_stack[dsp+1] = (data_stack[dsp] >> BYTE_SIZE) & 0xff;
@@ -631,8 +586,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case FMULTSC:
         {
-          // TODO no way to get scale of stack?
-          temp = (memory[pc] >> BYTE_SIZE);
+          temp = data_stack[dsp--];
           if (temp && temp < SCALE_MAX) {
             dtemp = SCALES[temp];
           } else {
@@ -646,8 +600,7 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case FDIVSC:
         {
-          // TODO no way to get scale of stack?
-          temp = (memory[pc] >> BYTE_SIZE);
+          temp = data_stack[dsp--];
           if (temp && temp < SCALE_MAX) {
             dtemp = SCALES[temp];
           } else {

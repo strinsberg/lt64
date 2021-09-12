@@ -275,28 +275,18 @@ tests = [
         "0008"
     ),
     Test(
-        "Left shift word on top of the stack",
-        "01 00  02 00  26 01  26 01  00 00",
-        "0008"
-    ),
-    Test(
-        "Left shift word on top of the stack, negative",
-        "01 00  fe ff  26 01  26 01  00 00",
+        "Left shift word at top-1 by top, negative",
+        "01 00  fe ff  01 00  02 00  26 00  00 00",
         "fff8"
     ),
     Test(
-        "Right shift word on top of the stack",
+        "Right shift word at top-1 by top",
         "01 00  08 00  01 00  02 00  27 00  00 00",
         "0002"
     ),
     Test(
-        "Right shift word on top of the stack",
-        "01 00  08 00  27 01  27 01  00 00",
-        "0002"
-    ),
-    Test(
         "Right shift word on top of the stack, negative",
-        "01 00  f8 ff  27 01  27 01  00 00",
+        "01 00  f8 ff  01 00  02 00  27 00  00 00",
         "fffe"
     ),
     Test(

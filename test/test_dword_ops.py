@@ -245,28 +245,18 @@ tests = [
         "0000 0010"
     ),
     Test(
-        "Left shift double word on top of the stack",
-        "0D 00  00 00  02 00  38 02  38 01  00 00",
-        "0000 0010"
-    ),
-    Test(
-        "Left shift double word on top of the stack, negative",
-        "0D 00  ff ff  fe ff  38 02  38 01  00 00",
+        "Left shift double word at top-1 by top, negative",
+        "0D 00  ff ff  fe ff  01 00 03 00 38 00  00 00",
         "ffff fff0"
     ),
     Test(
-        "Right shift double word on top of the stack",
+        "Right shift double word at top-1 by top",
         "0D 00  00 00  10 00  01 00  03 00  39 00  00 00",
         "0000 0002"
     ),
     Test(
-        "Right shift double word on top of the stack",
-        "0D 00  00 00  10 00  39 02  39 01  00 00",
-        "0000 0002"
-    ),
-    Test(
-        "Right shift word on top of the stack, negative",
-        "0D 00  ff ff f0 ff  39 02  39 01  00 00",
+        "Right shift word at top-1 by top, negative",
+        "0D 00  ff ff f0 ff  01 00  03 00  39 00  00 00",
         "ffff fffe"
     ),
     Test(
@@ -308,22 +298,22 @@ tests = [
     ),
     Test(
         "Multiply top two dwords. User scaled fixed point nums",
-        "0D 00  00 00  21 02  0D 00  00 00  f4 03  62 02  00 00",
+        "0D 00  00 00  21 02  0D 00  00 00  f4 03  01 00  02 00  62 00  00 00",
         "0000 158b"
     ),
     Test(
         "Multiply top two user scaled fwords with intermediate overflow",
-        "0D 00  eb 0b  2d c2  0D 00  00 00  f4 03  62 02  00 00",
+        "0D 00  eb 0b  2d c2  0D 00  00 00  f4 03  01 00  02 00  62 00  00 00",
         "78a3 cbc7"
     ),
     Test(
         "Divide top two dwords. User scaled fixed point nums",
-        "0D 00  00 00  f4 03  0D 00  00 00  21 02  63 02  00 00",
+        "0D 00  00 00  f4 03  0D 00  00 00  21 02  01 00  02 00  63 00  00 00",
         "0000 00b9"
     ),
     Test(
         "Divide top two dwords. User scaled fixed point nums, negative",
-        "0D 00  ff ff  0c fc  0D 00  00 00  21 02  63 02  00 00",
+        "0D 00  ff ff  0c fc  0D 00  00 00  21 02  01 00  02 00  63 00  00 00",
         "ffff ff47"
     ),
 
