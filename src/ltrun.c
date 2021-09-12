@@ -485,7 +485,6 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         break;
       case FREADSC:
         {
-          // TODO no way to get scale off of stack?
           temp = data_stack[dsp--];
           if (temp && temp < SCALE_MAX) {
             dtemp = SCALES[temp];

@@ -121,7 +121,7 @@ Below is some information on the VM architecture. This includes a discussion of 
 
 ## Word Size
 
-This is a 16 bit VM. This means it has a 16 bit word size. Instructions are encoded as 16 bits even though they only need 8 or less. In some cases operations will use the second byte to add additional information. For example, the shift operations can have the shift amount stored on the stack or in their second byte. This means some space is wasted in the program. It may be possible to pack two operations into a word when neither needs the second byte. However, in order to keep things simple this has not been implemented. If the VM was intended for real world use it might be necessary, but currently the size of the program in memory is not an issue.
+This is a 16 bit VM. This means it has a 16 bit word size. Instructions are encoded as 16 bits even though they only need 8 or less. This means some space is wasted in the program. In the future non-push operations will pack two operations into a word. However, in order to keep things simple this has not been implemented yet. If the VM was intended for real world use it would probably be necessary, but currently the size of the program in memory is not an issue.
 
 Another issue with 16 bit words is that 32 bit integers require 2 words to store. The VM has many operations on double words for integers and fixed point decimals. This works well, but requires extra work to shift bytes around to get double words into and out of memory. There is no support for 64 bit numbers or standard floating point numbers. So this is not a VM that will have high performance for large number calculations, but of course that is not really its purpose.
 
@@ -173,7 +173,7 @@ All arithmetic operations can overflow and underflow. Word calculations wrap aro
 
 # VM Operations
 
-Any operation preceded with a **d** is a double word version of the operation. I.e. **push** for 16 bit values and **dpush** for 32 bit values.Where double worrd operations would not work on fixed point values operations preceded with an **f** are provided. I.e. **mult** for fixed point is **fmult**.
+Any operation preceded with a **d** is a double word version of the operation. I.e. **push** for 16 bit values and **dpush** for 32 bit values.Where double word operations would not work on fixed point values operations preceded with an **f** are provided. I.e. **mult** for fixed point is **fmult**.
 
 Any ending in a **u** is an unsigned operation. Unsigned operations are available only where the resulting bytes will be different for signed vs unsigned. I.e. **lt** says `0xff` is less than `0x00` when signed, but the same values with **ltu** have `0xff` greater than `0x00` when unsigned.
 
@@ -235,7 +235,7 @@ Pops the top two stack elements and compares them. The unsigned versions treat t
 
 ### sl, sr, dsl, dsr
 
-The default behavior is to pop the top two stack elements and shift the top - 1  element the number of times given by the top. These are always signed and will perform sign extension. This means shifting a negative number right will not make it a positive number as the most significant bit will be filled with a `1` and not a `0`.
+Pops the top two stack elements and shift the top - 1  element the number of times given by the top. These are always signed and will perform sign extension. This means shifting a negative number right will not make it a positive number as the most significant bit will be filled with a `1` and not a `0`.
 
 ### and, dand, or, dor, not, dnot
 
@@ -245,9 +245,7 @@ Bitwise operations on the top of the stack. And and or pop the top two elements 
 
 ### bufload, bufstore
 
-Similar to **load** and **store**, but move between the stack and buffer. The top stack value is always read as an unsigned offset from the buffer pointer (**bfp**). The main difference is that it is possible to ignore pushing the offset and encode it into the op's top byte. This can make the working on smaller strings easier as you can save a little space and store up to an offset value of `255` directly in the op.
-
-**NOTE**: When the top byte is `0x00` it indicates the offset is on the stack and when the top byte is `0x01 - 0xff` it indicates an offset is in the op code. This means that using the encoded op is `1` indexed and not `0` indexed. This can be confusing and it requires some adjustments in the assembly code to make it `0` based in the code and `1` based in the binary. The encoded offset is not currently available in the assembler.
+Similar to **load** and **store**, but move between the stack and buffer. The top stack value is always read as an unsigned offset from the buffer pointer (**bfp**).
 
 ### high, low
 
@@ -265,11 +263,11 @@ These are more character operations, but they can be used to code and encode byt
 
 ### jump
 
-Pops an address element from the top of the stack and sets the program counter (**pc**) to that address and continues from the new **pc** value. Also has ability to use an offset in top byte to jump short distances, but this is not implemented in the assembler yet.
+Pops an address element from the top of the stack and sets the program counter (**pc**) to that address and continues from the new **pc** value.
 
 ### branch
 
-Pops the top two elements of the stack. If the top - 1 element is non-zero then it sets **pc** to the value of top and continues the program from there. Also, supports an offset for the jump in the top byte, but it is not implemented in the assembler yet.
+Pops the top two elements of the stack. If the top - 1 element is non-zero then it sets **pc** to the value of top and continues the program from there.
 
 ### call
 
@@ -281,7 +279,7 @@ Pops the top of the return stack and jumps to the address it represents.
 
 ### dsp, pc, bfb, fmp
 
-Pushes the address of the respective pointer onto the stack. Given an offset in the top byte of the op will add it to the address as an unsigned byte before pushing the address. Again this is to save a **push** and an add if the address is being used to find a relative address. Only works with offsets up to `255`. The offset addition is not implemented in the assembler yet.
+Pushes the address of the respective pointer onto the stack.
 
 ## I/O Operations
 
@@ -289,15 +287,15 @@ Pushes the address of the respective pointer onto the stack. Given an offset in 
 
 Pops the top element from the stack and prints it as a signed or unsigned decimal integer.
 
-### prnch
+### prnch, prnpk
 
-Pops the top word and prints it as an 8 bit *ascii* char.
-
-**NOTE:** Currently does not print packed chars, but this is important given how characters are represented and stored so it will be added. Currently if putting packed characters on the stack to print them they will need `high prnch pop low prnch pop pop` to produce the same result as printing a packed character would give.
+**prnch** pops the top word and prints the bottom byte as an 8 bit *ascii* char. **prnpk** prints the top word as two charcters. The first character is in the top byte and the second in the low byte.
 
 ### prn, prnln, prnmem
 
-The first two do not affect the stack and print the character buffer from `buf[0]` to the first `null (0x00)` byte. **prnmem** has the same printing behavior, but it pops an address off the stack and starts printing at that address.
+The first two do not affect the stack and print the character buffer from `buf[0]` to the first `null (0x00)` byte.
+
+**prnmem** has the same printing behavior, but it pops an word off the stack and starts printing from **fmp** + the value popped. It can also have a `1` encoded into the top byte in order to print using the popped value as an address and not an offset from **fmp**.
 
 ### wread, dread
 
@@ -305,9 +303,7 @@ Reads a 16 or 32 bit integer from *stdin* onto the stack. Accepts either signed 
 
 ### readch
 
-Reads the next char from *stdin* onto the stack.
-
-**NOTE:** Like **prnch** needs to have a flag to read two chars and automatically pack them into the word on top of the stack. Though the instructions `readch readch pack` in a program will have the same effect as the missing functionality.
+Reads the next char from *stdin* onto the stack. This reads the char into the bottom byte of the word that is placed on the stack. There is no way to automatically pack these read characters into a single word.
 
 ### readln
 
@@ -319,12 +315,17 @@ These operations are similar to signed double word operations, but with scaling 
 
 ### fmult, fdiv
 
-Perform multiplication and division on the top two double words on the stack while treating them as default scaled fixed point numbers.
+Perform multiplication and division on the top two double words on the stack while treating them as default scaled (`3` significant digits) fixed point numbers.
 
 ### fmultsc, fdivsc
 
-Perform multiplication and division on the top tw0 double words of the stack, However, use a different scaling factor (number of significant digits) encoded into the top byte of the operation instead of the default scaling of `3` significant digits. They then perform the operation the same as **fmult** and **fdiv**. For example to use `2` significant digits (scale factor of `100`) the operation would have `0x02` encoded in its top byte. The maximum number of significant digits is `9` and any time a larger number is given it will be treated as the a computation by the default number of significant digits `3`. Giving `0x01` will just treat the numbers as integers.
+Pop the top word of the stack to use as the number of significant digits for the scaling factor. Then perform the operation the same as **fmult** and **fdiv**. For example to use `2` significant digits (scale factor of `100`) the operation would have `0x0002` on top of the stack. The maximum number of significant digits is `9` and any time a larger number is given it will be treated as the default number of significant digits `3`. Giving `0x0001` will just treat the numbers as integers.
 
-### fprn, fprnsc
+### fprn
 
-Print the top double word on the stack as a fixed point number. Always prints with the number of significant digits even if they are zeros. I.e. `1.2` with default scaling will print as `1.200`. The scaled version works the same as the other fixed point custom scaling encoding the number of significant digits into the top byte of the operation.
+Print the top double word on the stack as a fixed point number. Uses the default scaling factor of `1000` for `3` significant digits. Always prints with the number of significant digits even if they are zeros. I.e. `1.2` with default scaling will print as `1.200`.
+
+### fprnsc
+
+Pop the top word off the stack and use it as the number of siginificant digits for the scaling factor. Then print the top double word on the stack as a fixed point number.
+
