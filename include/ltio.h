@@ -42,4 +42,10 @@ void print_string(WORD* mem, ADDRESS start, ADDRESS max);
  */
 void read_string(WORD* mem, ADDRESS start, ADDRESS max);
 
+/* Main debugging function. Shows the state of the stack and the current op
+ * along with some pointers.
+ */
+void debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
+                        ADDRESS rsp, ADDRESS pc, WORD op);
+
 #endif

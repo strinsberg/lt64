@@ -35,7 +35,7 @@ size_t read_program(WORD* mem, const char* filename) {
 void display_range(WORD* mem, ADDRESS start, ADDRESS end, bool debug) {
   for (ADDRESS i = start; i < end; i++) {
     if (debug)
-      fprintf(stderr, "%04hx ", mem[i]);
+      fprintf(stderr, "%04hx(%hd) ", mem[i], mem[i]);
     else
       printf("%04hx ", mem[i]);
   }
@@ -96,3 +96,12 @@ void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
   mem[atemp + 1] = 0;
 }
 
+void debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
+                        ADDRESS rsp, ADDRESS pc, WORD op) {
+  fprintf(stderr, "Dstack: ");
+  display_range(data_stack, 0x0001, dsp + 1, DEBUGGING);
+  fprintf(stderr, "Rstack: ");
+  display_range(return_stack, 0x0001, rsp + 1, DEBUGGING);
+  fprintf(stderr, "OP: %hx (%hu)\nPC: %hx (%hu)\n\n",
+          op, op, pc, pc);
+}
