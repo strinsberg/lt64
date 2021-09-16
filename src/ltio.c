@@ -191,6 +191,8 @@ void display_op_name(OP_CODE op, FILE* stream) {
     case READSP_unused: fprintf(stream, "READSP_unused"); break;
     case HIGH: fprintf(stream, "HIGH"); break;
     case LOW: fprintf(stream, "LOW"); break;
+    case BFSTORE: fprintf(stream, "BFSTORE"); break;
+    case BFLOAD: fprintf(stream, "BFLOAD"); break;
     case UNPACK: fprintf(stream, "UNPACK"); break;
     case PACK: fprintf(stream, "PACK"); break;
     case MEMCOPY: fprintf(stream, "MEMCOPY"); break;
@@ -204,25 +206,26 @@ void display_op_name(OP_CODE op, FILE* stream) {
   }
 }
 
-size_t debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
-                        ADDRESS rsp, ADDRESS pc, WORD op, size_t skip) {
+void debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
+                        ADDRESS rsp, ADDRESS pc, WORD op) {
   // print stacks and pointers
   fprintf(stderr, "Dstack: ");
   display_range(data_stack, 0x0001, dsp + 1, DEBUGGING);
   fprintf(stderr, "Rstack: ");
   display_range(return_stack, 0x0001, rsp + 1, DEBUGGING);
-  fprintf(stderr, "PC: %hx (%hu), OP: ", pc, pc);
+  fprintf(stderr, "PC: %hx (%hu), Next OP: ", pc, pc);
   display_op_name(op, stderr);
   fprintf(stderr, "\n\n");
+}
 
-  // deal with step
-  if (skip != 0) {
-    return skip - 1;
+size_t debug_step(size_t steps) {
+  if (steps > 0) {
+    return steps - 1;
   } else {
     char buffer[10];
     int size = 10;
 
-    fprintf(stderr, "*** Enter Step: ");
+    fprintf(stderr, "*** Steps: ");
     if ( fgets(buffer, size, stdin) != NULL ) {
       return atoi(buffer);
     } else {

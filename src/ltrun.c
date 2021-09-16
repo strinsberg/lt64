@@ -23,12 +23,11 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   
   // Run the program in memory
   bool run = true;
-  size_t debug_skip = 3;
+  size_t debug_steps = 3;
   while (run) {
     // Print stack, op code, and pc before every execution
     if (DEBUGGING) {
-      debug_skip = debug_info_display(data_stack, return_stack, dsp, rsp, pc,
-                                      memory[pc], debug_skip);
+      debug_info_display(data_stack, return_stack, dsp, rsp, pc, memory[pc]);
     }
 
     // Catch some common pointer/address errors
@@ -624,6 +623,9 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         return EXIT_OP;
     }
     pc++;
+
+    if (DEBUGGING)
+      debug_steps = debug_step(debug_steps);
   }
 
   // When program is run for tests we print out the contents of the stack
