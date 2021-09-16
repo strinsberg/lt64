@@ -220,7 +220,7 @@ void debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
   display_range(return_stack, 0x0001, rsp + 1, DEBUGGING);
   fprintf(stderr, "PC: %hx (%hu), Next OP: ", pc, pc);
   display_op_name(op, stderr);
-  fprintf(stderr, "\n\n");
+  fprintf(stderr, "\n");
 }
 
 size_t debug_step(size_t steps) {
@@ -231,9 +231,9 @@ size_t debug_step(size_t steps) {
     int size = 10;
 
     fflush(stdout);
-    fprintf(stderr, "  ***Step: ");
+    fprintf(stderr, "\n***Step: ");
     if ( fgets(buffer, size, stdin) != NULL ) {
-      return atoi(buffer);
+      return strtol(buffer,NULL,10);
     } else {
       return 0;
     }
