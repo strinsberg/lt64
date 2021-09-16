@@ -1,4 +1,5 @@
 #include "ltconst.h"
+#include "ltrun.h"
 #include "stdlib.h"
 #include "stdio.h"
 #include "stdbool.h"
@@ -101,6 +102,108 @@ void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
   mem[atemp + 1] = 0;
 }
 
+// this is formated this way to keep it from taking up 300 lines
+void display_op_name(OP_CODE op, FILE* stream) {
+  switch (op) {
+    case HALT: fprintf(stream, "HALT"); break;
+    case PUSH: fprintf(stream, "PUSH"); break;
+    case POP: fprintf(stream, "POP"); break;
+    case LOAD: fprintf(stream, "LOAD"); break;
+    case STORE: fprintf(stream, "STORE"); break;
+    case FST: fprintf(stream, "FST"); break;
+    case SEC: fprintf(stream, "SEC"); break;
+    case NTH: fprintf(stream, "NTH"); break;
+    case SWAP: fprintf(stream, "SWAP"); break;
+    case ROT: fprintf(stream, "ROT"); break;
+    case RPUSH: fprintf(stream, "RPUSH"); break;
+    case RPOP: fprintf(stream, "RPOP"); break;
+    case RGRAB: fprintf(stream, "RGRAB"); break;
+    case DPUSH: fprintf(stream, "DPUSH"); break;
+    case DPOP: fprintf(stream, "DPOP"); break;
+    case DLOAD: fprintf(stream, "DLOAD"); break;
+    case DSTORE: fprintf(stream, "DSTORE"); break;
+    case DFST: fprintf(stream, "DFST"); break;
+    case DSEC: fprintf(stream, "DSEC"); break;
+    case DNTH: fprintf(stream, "DNTH"); break;
+    case DSWAP: fprintf(stream, "DSWAP"); break;
+    case DROT: fprintf(stream, "DROT"); break;
+    case DRPUSH: fprintf(stream, "DRPUSH"); break;
+    case DRPOP: fprintf(stream, "DRPOP"); break;
+    case DRGRAB: fprintf(stream, "DRGRAB"); break;
+    case ADD: fprintf(stream, "ADD"); break;
+    case SUB: fprintf(stream, "SUB"); break;
+    case MULT: fprintf(stream, "MULT"); break;
+    case DIV: fprintf(stream, "DIV"); break;
+    case MOD: fprintf(stream, "MOD"); break;
+    case EQ: fprintf(stream, "EQ"); break;
+    case LT: fprintf(stream, "LT"); break;
+    case GT: fprintf(stream, "GT"); break;
+    case MULTU: fprintf(stream, "MULTU"); break;
+    case DIVU: fprintf(stream, "DIVU"); break;
+    case MODU: fprintf(stream, "MODU"); break;
+    case LTU: fprintf(stream, "LTU"); break;
+    case GTU: fprintf(stream, "GTU"); break;
+    case SL: fprintf(stream, "SL"); break;
+    case SR: fprintf(stream, "SR"); break;
+    case AND: fprintf(stream, "AND"); break;
+    case OR: fprintf(stream, "OR"); break;
+    case NOT: fprintf(stream, "NOT"); break;
+    case DADD: fprintf(stream, "DADD"); break;
+    case DSUB: fprintf(stream, "DSUB"); break;
+    case DMULT: fprintf(stream, "DMULT"); break;
+    case DDIV: fprintf(stream, "DDIV"); break;
+    case DMOD: fprintf(stream, "DMOD"); break;
+    case DEQ: fprintf(stream, "DEQ"); break;
+    case DLT: fprintf(stream, "DLT"); break;
+    case DGT: fprintf(stream, "DGT"); break;
+    case DMULTU_unused: fprintf(stream, "DMULTU_unused"); break;
+    case DDIVU: fprintf(stream, "DDIVU"); break;
+    case DMODU: fprintf(stream, "DMODU"); break;
+    case DLTU: fprintf(stream, "DLTU"); break;
+    case DGTU: fprintf(stream, "DGTU"); break;
+    case DSL: fprintf(stream, "DSL"); break;
+    case DSR: fprintf(stream, "DSR"); break;
+    case DAND: fprintf(stream, "DAND"); break;
+    case DOR: fprintf(stream, "DOR"); break;
+    case DNOT: fprintf(stream, "DNOT"); break;
+    case JUMP: fprintf(stream, "JUMP"); break;
+    case BRANCH: fprintf(stream, "BRANCH"); break;
+    case CALL: fprintf(stream, "CALL"); break;
+    case RET: fprintf(stream, "RET"); break;
+    case DSP: fprintf(stream, "DSP"); break;
+    case PC: fprintf(stream, "PC"); break;
+    case BFP: fprintf(stream, "BFP"); break;
+    case FMP: fprintf(stream, "FMP"); break;
+    case WPRN: fprintf(stream, "WPRN"); break;
+    case DPRN: fprintf(stream, "DPRN"); break;
+    case WPRNU: fprintf(stream, "WPRNU"); break;
+    case DPRNU: fprintf(stream, "DPRNU"); break;
+    case FPRN: fprintf(stream, "FPRN"); break;
+    case FPRNSC: fprintf(stream, "FPRNSC"); break;
+    case PRNCH: fprintf(stream, "PRNCH"); break;
+    case PRN: fprintf(stream, "PRN"); break;
+    case PRNLN: fprintf(stream, "PRNLN"); break;
+    case PRNSP_unused: fprintf(stream, "PRNSP_unused"); break;
+    case PRNMEM: fprintf(stream, "PRNMEM"); break;
+    case READCH: fprintf(stream, "READCH"); break;
+    case READ_unused: fprintf(stream, "READ_unused"); break;
+    case READLN: fprintf(stream, "READLN"); break;
+    case READSP_unused: fprintf(stream, "READSP_unused"); break;
+    case HIGH: fprintf(stream, "HIGH"); break;
+    case LOW: fprintf(stream, "LOW"); break;
+    case UNPACK: fprintf(stream, "UNPACK"); break;
+    case PACK: fprintf(stream, "PACK"); break;
+    case MEMCOPY: fprintf(stream, "MEMCOPY"); break;
+    case STRCOPY: fprintf(stream, "STRCOPY"); break;
+    case FMULT: fprintf(stream, "FMULT"); break;
+    case FDIV: fprintf(stream, "FDIV"); break;
+    case FMULTSC: fprintf(stream, "FMULTSC"); break;
+    case FDIVSC: fprintf(stream, "FDIVSC"); break;
+    case PRNPK: fprintf(stream, "PRNPK"); break;
+    default: fprintf(stream, "UNKNOWN=%hx (%hd)", op, op); break;
+  }
+}
+
 size_t debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
                         ADDRESS rsp, ADDRESS pc, WORD op, size_t skip) {
   // print stacks and pointers
@@ -108,7 +211,9 @@ size_t debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
   display_range(data_stack, 0x0001, dsp + 1, DEBUGGING);
   fprintf(stderr, "Rstack: ");
   display_range(return_stack, 0x0001, rsp + 1, DEBUGGING);
-  fprintf(stderr, "OP: %hx (%hu)\nPC: %hx (%hu)\n\n", op, op, pc, pc);
+  fprintf(stderr, "PC: %hx (%hu), OP: ", pc, pc);
+  display_op_name(op, stderr);
+  fprintf(stderr, "\n\n");
 
   // deal with step
   if (skip != 0) {
