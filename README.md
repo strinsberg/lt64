@@ -6,23 +6,50 @@ The companion assembler can be found in another [repository](https://github.com/
 
 # Purpose
 
-The purpose of this project was mostly for fun, but also to learn a little about low level programming. What better way to think about some of the things that are important at the machine level than to build your own machine level. There are obvious differences between the things that can be done in hardware and what can be done in software, but considering the operations to implement and their efficiency it is easier to see these things.
+The purpose of this project was mostly for fun, but also to learn a little
+about low level programming. What better way to think about some of the things
+that are important at the machine level than to build your own machine level.
+There are obvious differences between the things that can be done in hardware
+and what can be done in software, but considering the operations to implement
+and their efficiency it is easier to see these things.
 
-I also just love to program and it is fun to find a project that is not so big that it will take years to complete. A couple tries to get something basic working only took a couple weeks. Plus a VM can be used as a target for an assembler and assembly language. It could also be the target for some custom toy compilers to practice generating assembly or machine code without having to learn a specific architecture. And lots of widely used programming languages have VMs or byte code interpreters, so implementing one can help one gain i sight into those tools.
+I also just love to program and it is fun to find a project that is not so big
+that it will take years to complete. A couple tries to get something basic
+working only took a couple weeks. Plus a VM can be used as a target for an
+assembler and assembly language. It could also be the target for some custom
+toy compilers to practice generating assembly or machine code without having
+to learn a specific architecture. And lots of widely used programming languages
+have VMs or byte code interpreters, so implementing one can help one gain I
+sight into those tools.
 
 ## Notes
 
-- The name was meant to be cheeky homage to the Commodore 64. It was more appropriate for the first version where the VM had a total memory size of 64kb. Changes to the architecture have made the memory size larger, but the name is still fun (to me).
-- While I put some effort into efficiency, this is essentially a "toy" VM. There will be trade offs between efficiency and things like minimal error handling or ease of implementation.
-- I am NOT a C programmer so do not expect my C code to be an example of how to program in C.
-- I have written a small test suite in python. It tests the basic functionality of each operation, but may not test all edge cases. Mostly it is just hard to test things when one has to write programs in hex (at least for me).
-- There are some choices inspired by, or copied from, Forth. However, this is not a Forth implementation. Forth is just a really great implementation of stack based computing and it would be silly to ignore it when building something like this.
+- The name was meant to be cheeky homage to the Commodore 64. It was more
+  appropriate for the first version where the VM had a total memory size of
+  64kb. Changes to the architecture have made the memory size larger, but the
+  name is still fun (to me).
+- While I put some effort into efficiency, this is essentially a "toy" VM.
+  There will be trade offs between efficiency and things like minimal error
+  handling or ease of implementation.
+- I am NOT a C programmer so do not expect my C code to be an example of how
+  to program in C.
+- I have written a small test suite in python. It tests the basic
+  functionality of each operation, but may not test all edge cases. Mostly it
+  is just hard to test things when one has to write programs in hex (at least for me).
+- There are some choices inspired by, or copied from, Forth. However, this is
+  not a Forth implementation. Forth is just a really great implementation of
+  stack based computing and it would be silly to ignore it when building
+  something like this.
 
 # Usage
 
 ## Building
 
-The VM is written in plain C. It does not use any special libraries. It uses a simple Makefile with `gcc` and some simple compiler flags like `-O3` for release builds and `-D <var_to_define>` for debug and test builds. It is probably possible to compile it with other C compilers, but I have not tested this.
+The VM is written in plain C. It does not use any special libraries. It uses a
+simple Makefile with `gcc` and some simple compiler flags like `-O3` for
+release builds and `-D <var_to_define>` for debug and test builds. It is
+probably possible to compile it with other C compilers, but I have not tested
+this.
 
 ```bash
 $ git clone https://github.com/strinsberg/lieutenant-64.git
@@ -43,43 +70,75 @@ $ lt64 path_to_file
 $ lt64-debug path_to_file
 ```
 
-The VM reads the bytes of a file so it is necessary to either edit a file in a hex editor with the hex values of each operation and argument, which is not ideal, or use the assembler to produce a binary file for the VM to run. The second option should be preferred, but if using the first option consult one of the test files to see how the bytes are expected to be ordered.
+The VM reads the bytes of a file so it is necessary to either edit a file in a
+hex editor with the hex values of each operation and argument, which is not
+ideal, or use the assembler to produce a binary file for the VM to run. The
+second option should be preferred, but if using the first option consult one
+of the test files to see how the bytes are expected to be ordered.
 
-The debug version of the VM will produce a few lines of output **before** executing each operation. This output is sent to *stderr* to make it possible to separate it from program output. You can pipe either *stderr* or *stdout* to a file to view them separately. However, since debug output is printed before executing an instruction program output for a print instruction will be come somewhere after that instruction's debug output and before the next instructions debug output.
+### Debug Mode
 
-The debug output will include the current stack contents (from bottom to top), the value of the current operation, and the program counter to see where in program memory the operation is located. The stack contents will list the hex value of each word on the stack. The other values will be listed in hex with the unsigned decimal value following in brackets. Note that operations that encode extra information (discussed below) in the top byte of the instruction word may have misleading decimal representations. Below is an example of the debug output for a single standard operation.
+The debug version of the VM will produce a few lines of output **before**
+executing each operation. The debug output includes the current stack contents
+(from bottom to top), the value of the current operation, and the program
+counter to see where in program memory the operation is located.
+The stack contents will list the hex value of each word on the stack, with the
+decimal in brackets. The reason for using both is that if the contents are,
+for example, 2 characters packed into a single word the decimal number is not
+useful.
+
+The debug mode allows stepping through the execution. Before each operation
+it provides a prompt `***Step: `. To just execute the next operation press
+`Return`. This makes it easy to step through single operations quickly without
+skipping any. To run multiple operations before pausing again enter a positive
+integer. I.e. `***Step: 19` would run the next `19` operations before asking
+for another step. If you don't want to pause at all enter a really high number
+and unless your program is really long it should run till it is finished.
+
+Note that due to some idiosyncrasies in C io, when the program asks for input
+and does not read a newline the step prompt will read the newline. This means
+that after a `:wread` or similar operation the next step will automatically
+be skipped. It is not a huge problem as this just immediately shows the result
+of the read, but it may not be expected. Also, program output should occur
+directly under the `PC: ...` line and have a single newline between it and
+`***Step:`.
 
 ```
-Stack: 0009 0001 002c                                                                       
-OP: 3e (62)
-PC: 23 (35)
+Dstack: 0(0) 2(2) 0(0) 1(1) 0(0) 40(64) ->
+Rstack: ->                                             
+PC: 10 (16), Next OP: DPUSH
+
+***Step: 
 ```
 
-**NOTE:** Currently the debug mode does not support stepping through the program. Long running programs or infinite loops will produce a lot of output. It will be necessary to scroll back to examine the program as a whole.
+In the above example the stack has 6 words on it, the return stack is empty,
+the program is at address `0x10`, and the operation that will be performed
+for the next step is **dpush**.
 
 ## Test Suite
 
-The VM has a collection of simple tests to ensure the bulk of the functionality works as expected. The test program and tests are written in Python 3 so Python 3.6+ is required to run the tests.
-
+The VM has a collection of simple tests to ensure the bulk of the functionality
+works as expected. The test program and tests are written in Python 3 so
+Python 3.6+ is required to run the tests.
 ```
 $ make tests
 ```
-
-Test output shows the title of each test suite run followed by a numbered list of each test run. Each test line shows it's name and the result. 
+Test output shows the title of each test suite run followed by a numbered list
+of each test run. Each test line shows it's name and the result. 
 
 ```
 # Sample truncated passing test output
 ...
 ...
-======== Handles errors ========                                                
+======== Handles errors ========
 1:  Bad OP code                                                           [PASS]
 2:  Stack overflow                                                        [PASS]
 3:  Stack underflow                                                       [PASS]
 4:  Pc out of bounds                                                      [PASS]
 5:  Return stack overflow                                                 [PASS]
 6:  Return stack underflow                                                [PASS]
-                                                                                
-                                                                                
+
+
 **** 162 Tests Passed ****
 ```
 
@@ -89,79 +148,192 @@ Failing tests will be reprinted at the bottom of the output with more detailed i
 # Sample truncated output with failing test
 ...
 ...
-======== Handles errors ========                                                
+======== Handles errors ========
 1:  Bad OP code                                                           [PASS]
 2:  Stack overflow                                                        [PASS]
 3:  Stack underflow                                                       [PASS]
 4:  Pc out of bounds                                                      [PASS]
 5:  Return stack overflow                                                 [PASS]
 6:  Return stack underflow                                                [PASS]
-                                                                                
-                                                                                
-**** Failed Test Results ****                                                   
-                                                                                 
-7:  Duplicate stack top - 1                                               [FAIL]                           
-Exit Code: 0                                                                          
-                                                                                      
-EXPECTED: aabb ccdd aabb                                                        
-ACTUAL:   aabb ccdd 0000                                                        
-                                                                                
+
+
+**** Failed Test Results ****
+
+7:  Duplicate stack top - 1                                               [FAIL]
+EXPECTED: aabb ccdd aabb
+ACTUAL:   aabb ccdd 0000
+
 Tests Failed: 1
 ```
 
-**NOTE:** The output uses ansi color codes in the output to color PASS and FAIL as well as a couple other things. If your terminal does not support these the test output will be hard to read. Because the testing "framework" is homemade it does not support running without these codes.
+**NOTE:** The output uses *ansi* color codes in the output to color PASS and
+FAIL as well as a couple other things. If your terminal does not support
+these the test output will be hard to read. Because the testing "framework"
+is homemade it does not support running without these codes.
 
 # Assembler
 
-The assembler for this project is available in another [repository](https://github.com/strinsberg/lt64-asm). It uses a LISP style syntax and is written in Clojure. The assembler makes it possible to specify labeled static program data that can be initialized with optional values or just declared to make space for use in the program. It also supports writing procedures in separate module files and including them in a program or module. More detailed information can be found in the assembler's repository.
+The assembler for this project is available in another
+[repository](https://github.com/strinsberg/lt64-asm). It uses a LISP style
+syntax and is written in Clojure. The assembler makes it possible to specify
+labeled static program data that can be initialized with optional values or
+just declared to make space for use in the program. It also supports writing
+subroutines in separate module files and including them in a program or module.
+More detailed information can be found in the assembler's repository.
 
 # Architecture
 
-Below is some information on the VM architecture. This includes a discussion of the data size, instruction format, stack usage, memory layout, and how data is represented in memory.
+Below is some information on the VM architecture. This includes a discussion
+of the data size, instruction format, stack usage, memory layout, and how data
+is represented in memory.
 
 ## Word Size
 
-This is a 16 bit VM. This means it has a 16 bit word size. Instructions are encoded as 16 bits even though they only need 8 or less. This means some space is wasted in the program. In the future non-push operations will pack two operations into a word. However, in order to keep things simple this has not been implemented yet. If the VM was intended for real world use it would probably be necessary, but currently the size of the program in memory is not an issue.
+This is a 16 bit VM. This means it has a 16 bit word size. Instructions are
+encoded as 16 bits even though they only need 8 or less. This means some space
+is wasted in the program. In the future non-push operations will pack two
+operations into a word. However, in order to keep things simple this has not
+been implemented yet. If the VM was intended for real world use it would
+probably be necessary, but currently the size of the program in memory is
+not an issue.
 
-Another issue with 16 bit words is that 32 bit integers require 2 words to store. The VM has many operations on double words for integers and fixed point decimals. This works well, but requires extra work to shift bytes around to get double words into and out of memory. There is no support for 64 bit numbers or standard floating point numbers. So this is not a VM that will have high performance for large number calculations, but of course that is not really its purpose.
+Another issue with 16 bit words is that 32 bit integers require 2 words to
+store. The VM has many operations on double words for integers and fixed point
+decimals. This works well, but requires extra work to shift bytes around to get
+double words into and out of memory. There is no support for 64 bit numbers
+or standard floating point numbers. So this is not a VM that will have high
+performance for large number calculations, but of course that is not really its
+purpose.
 
 ## The Stack(s)
 
-As the name and the mentions in the previous section would suggest, this is a stack based machine. At first the program, stack, and free memory were all in a single array of words (originally 8 bit words), but this felt a little too restrictive after some thought. After reading a little bit about actual [stack based CPUs](https://users.ece.cmu.edu/~koopman/stack_computers/index.html) and the [Forth](https://www.forth.com/starting-forth/) language two separate stacks were added. One data stack to hold values for computation and a second return stack to hold return addresses for subroutine calls and temporary values. This makes the operation set require some different things like duplication of stack elements and swaps, but it also makes the general operations of the program very simple.
+As the name and the mentions in the previous section would suggest, this is a
+stack based machine. At first the program, stack, and free memory were all in a
+single array of words (originally 8 bit words), but this felt a little too
+restrictive after some thought. After reading a little bit about actual
+[stack based CPUs](https://users.ece.cmu.edu/~koopman/stack_computers/index.html)
+and the [Forth](https://www.forth.com/starting-forth/) language two separate
+stacks were added. One data stack to hold values for computation and a second
+return stack to hold return addresses for subroutine calls and temporary
+values. This makes the operation set require some different things like
+duplication of stack elements and swaps, but it also makes the general
+operations of the program very simple.
 
-All computation is done on the stack. When adding two numbers they need to be pushed onto the stack, or left there as the result of previous computation, then the add operation will pop them and push the result. Other operations like branching will look on top of the stack for a condition result and an address to jump to if the condition is true (non-zero). The only operations that take arguments directly following them in the program memory are push operations. Everything else gets an argument from the stack or encoded in its second byte. In the future support could be added either in the VM or the assembler to specify arguments for ops like jump, call, and branch following the op rather than having to push them explicitly, but it works well for now.
+All computation is done on the stack. When adding two numbers they need to be
+pushed onto the stack, or left there as the result of previous computation,
+then the add operation will pop them and push the result. Other operations
+like branching will look on top of the stack for a condition result and an
+address to jump to if the condition is true (non-zero). The only operations
+that take arguments directly following them in the program memory are push
+operations. Everything else gets an argument from the stack or encoded in its
+second byte. In the future support could be added either in the VM or the
+assembler to specify arguments for ops like jump, call, and branch following
+the op rather than having to push them explicitly, but it works well for now.
 
-The return stack is mostly for storing return addresses for subroutine calls. When the call instruction is executed the address of the next instruction is pushed onto the return stack before the program counter is set to the address of the subroutine. When the return operation is executed the top value of the return stack is assigned to the program counter to return to the correct instruction.
+The return stack is mostly for storing return addresses for subroutine calls.
+When the call instruction is executed the address of the next instruction is
+pushed onto the return stack before the program counter is set to the address
+of the subroutine. When the return operation is executed the top value of the
+return stack is assigned to the program counter to return to the correct
+instruction.
 
-This is not the only function of the return stack. During a subroutine call it may be desirable to store some local/temp values somewhere. Instead of storing them in memory at a given address they can be pushed onto the return stack. They **MUST** be popped before a subroutine returns though or the resulting return jump will not go to the intended address and the program will go into an undefined state or crash.
+This is not the only function of the return stack. During a subroutine call
+it may be desirable to store some local/temp values somewhere. Instead of
+storing them in memory at a given address they can be pushed onto the return
+stack. They **MUST** be popped before a subroutine returns though or the
+resulting return jump will not go to the intended address and the program
+will go into an undefined state or crash.
 
-The other consequence/benefit of the stack based architecture is that there are no registers available to the programmer for storing values. There are some pseudo registers for keeping track of different parts of memory, the program counter, and the stack pointers. These can be read to find thier address values, but not directly mutated.
+The other consequence/benefit of the stack based architecture is that there
+are no registers available to the programmer for storing values. There are
+some pseudo registers for keeping track of different parts of memory, the
+program counter, and the stack pointers. These can be read to find their
+address values, but not directly mutated.
 
 ## Program Memory
 
-The use of 16 bit words means there can be roughly 65k addresses. This gives 128kb of memory for the program and its non-stack data storage. This program memory is split into 3 parts.
+The use of 16 bit words means there can be roughly 65k addresses. This gives
+128kb of memory for the program and its non-stack data storage. This program
+memory is split into 3 parts.
 
-The first is the program instructions. This portion of memory stores the loaded program, and if using the assembler it also stores static program data declared in the assembly program. The program pointer points to the current instruction and execution stops when it executes the halt operation (`0x00`). This portion of memory is not limited in its size and as long as the program fits in memory it will be loaded and start running. However if a very large program uses any free memory then it may crash or have instructions overwritten with store ops.
+The first is the program instructions. This portion of memory stores the
+loaded program, and if using the assembler it also stores static program data
+declared in the assembly program. The program pointer points to the current
+instruction and execution stops when it executes the halt operation (`0x00`).
+This portion of memory is not limited in its size and as long as the program
+fits in memory it will be loaded and start running. However if a very large
+program uses any free memory then it may crash or have instructions overwritten
+with store ops.
 
-Directly after the program instructions is a buffer. This area (currently 1024 words) is a temporary chunk of memory for reading in string or manipulating and printing strings. It is not strictly necessary but operations on it pack two *ascii* characters into each word and there are some ops for printing null terminated string from the buffer easily. Strings can be copied to or from the buffer to memory. They can also have individual words copies to the stack for manipulation and then have them copied back. The buffer is addressed from 0 to 1023 for its operations to make working on it simpler. However the buffer pointer can be accessed to get the address of the start of the buffer if desired.
+Directly after the program instructions is a buffer. This area
+(currently 1024 words) is a temporary chunk of memory for reading in string or
+manipulating and printing strings. It is not strictly necessary but operations
+on it pack two *ascii* characters into each word and there are some ops for
+printing null terminated string from the buffer easily. Strings can be copied
+to or from the buffer to memory. They can also have individual words copies to
+the stack for manipulation and then have them copied back. The buffer is
+addressed from 0 to 1023 for its operations to make working on it simpler.
+However the buffer pointer can be accessed to get the address of the start of
+the buffer if desired. When not being used for strings the buffer can also
+be used as temporary storage, but if any read instructions are used before the
+data stored is no longer needed it will be lost.
 
-After the buffer the rest of memory is free memory. If the programmer wants to store data during the program run the can with the load and store operations. Like the buffer a convenience is provided to allow these operations to be addressed from 0 so that the programmer does not have to know where free memory start. With a variable length program the position of the free pointer is not fixed for every program. However, the fmp address is accessible and if a large portion of free memory will be used it may be desirable to know where the fmp is and how much memory is available. Free memory is for longer lasting values that are not declared in static memory in an assembly program and should not be left on the stack for a long time. Though many simple, and possibly some complex, programs may get by easily with static memory blocks or just the stack.
+After the buffer the rest of memory is free memory. If the programmer wants
+to store data during the program run the can with the load and store
+operations. Like the buffer a convenience is provided to allow these
+operations to be addressed from 0 so that the programmer does not have to
+know where free memory start. With a variable length program the position of
+the free pointer is not fixed for every program. However, the **fmp**
+address is accessible and if a large portion of free memory will be used it
+may be desirable to know where the **fmp** is and how much memory is available.
+Free memory is for longer lasting values that are not declared in static memory
+in an assembly program and should not be left on the stack for a long time.
+Though many simple, and possibly some complex, programs may get by easily with
+static memory blocks or just the stack.
 
 ## Data Types and Storage
 
 ### Signs
 
-As mentioned above all data is stored in 16 bit words. Internally the VM uses the C `short` type. This is a signed type and there for all operations default to working with signed values. Of course the bit representation does not change either way. Where it is necessary unsigned operations are provided to treat the values as unsigned. Operations that may have unexpected results because of this will explain in their description below.
+As mentioned above all data is stored in 16 bit words. Internally the VM uses
+the C `short` type. This is a signed type and there for all operations default
+to working with signed values. Of course the bit representation does not change
+either way. Where it is necessary unsigned operations are provided to treat the
+values as unsigned. Operations that may have unexpected results because of this
+will explain in their description below.
 
 ### Double words
 
-Double words are stored in two 16 bit memory cells to represent 32 bit values. In memory the most significant 16 bits are stored in the lower addressed cell and the least significant 16 bits directly above them. For example `0xaabbccdd` will be stored on the stack from bottom to top as `[0xaabb, 0xccdd]`.
+Double words are stored in two 16 bit memory cells to represent 32 bit values.
+In memory the most significant 16 bits are stored in the lower addressed cell
+and the least significant 16 bits directly above them. For example `0xaabbccdd`
+will be stored on the stack from bottom to top as `[0xaabb, 0xccdd]`.
 
 ### Fixed point values
 
-The VM has no floating point numbers. This is because it is easier to represent and work with fixed point numbers. Fixed point numbers are by default stored with a scaling factor of `1000` which means calculations will be accurate to 3 decimal places, with some caveats for integer division of the stored representation. There are some operations that allow using a custom scaling factor from 1 to 9 significant digits. They are stored in a double word to give enough size for reasonable usage and they are always treated as signed numbers. The max size for default scaled numbers is then the same as C's max `int` value divided by the scaling factor. The internal storage is then just the floating point number read in, or entered in the assembler, multiplied by the scaling factor and stored as an integer, discarding any decimal digits after the multiplication (not rounding).
+The VM has no floating point numbers. This is because it is easier to represent
+and work with fixed point numbers. Fixed point numbers are by default stored
+with a scaling factor of `1000` which means calculations will be accurate to
+3 decimal places, with some caveats for integer division of the stored
+representation. There are some operations that allow using a custom scaling
+factor from 1 to 9 significant digits. They are stored in a double word to
+give enough size for reasonable usage and they are always treated as signed
+numbers. The max size for default scaled numbers is then the same as C's max
+`int` value divided by the scaling factor. The internal storage is then just
+the floating point number read in, or entered in the assembler, multiplied by
+the scaling factor and stored as an integer, discarding any decimal digits
+after the multiplication (not rounding).
 
-Because of the internal representation many fixed point operations can be done with double word operations. Where this would not work special fixed point operations are provided. When internally an operation would have a larger representation for intermediate values a larger size is used to prevent unexpected rounding. I.e. multiplying two integers where the first 3 digits are for the decimal places will give a result that would have the first 6 digits as decimal places. So the number may be up to 3 digits larger than could be stored in a double word before it is scaled back down to have 3 digits of decimal precision. This extra size is handled appropriately internally. So multiplications will only overflow if the result would overflow.
+Because of the internal representation many fixed point operations can be done
+with double word operations. Where this would not work special fixed point
+operations are provided. When internally an operation would have a larger
+representation for intermediate values a larger size is used to prevent
+unexpected rounding. I.e. multiplying two integers where the first 3 digits
+are for the decimal places will give a result that would have the first 6
+digits as decimal places. So the number may be up to 3 digits larger than
+could be stored in a double word before it is scaled back down to have 3
+digits of decimal precision. This extra size is handled appropriately
+internally. So multiplications will only overflow if the result would overflow.
 
 ### Characters
 
