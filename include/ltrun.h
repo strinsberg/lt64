@@ -9,7 +9,7 @@
  * VM will still run fine if they are rearanged, but the tests depend on the
  * current code assignment.
  */
-enum op_codes { HALT=0,
+typedef enum op_codes { HALT=0,
   PUSH, POP, LOAD, STORE,  // 04
   FST, SEC, NTH,  // 07
   SWAP, ROT,  // 09
@@ -50,7 +50,7 @@ enum op_codes { HALT=0,
   FMULT, FDIV, FMULTSC, FDIVSC,  // 63
 
   PRNPK,
-};
+} OP_CODE;
 
 // Some additional codes to track the direction of memory copies
 enum copy_codes { MEM_BUF = 0, BUF_MEM };

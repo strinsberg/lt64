@@ -23,13 +23,12 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   
   // Run the program in memory
   bool run = true;
+  size_t debug_steps = 3;
   while (run) {
     // Print stack, op code, and pc before every execution
     if (DEBUGGING) {
-      fprintf(stderr, "Stack: ");
-      display_range(data_stack, 0x0001, dsp + 1, DEBUGGING);
-      fprintf(stderr, "OP: %hx (%hu)\nPC: %hx (%hu)\n\n",
-              memory[pc], memory[pc], pc, pc);
+      debug_steps = debug_step(debug_steps);
+      debug_info_display(data_stack, return_stack, dsp, rsp, pc, memory[pc] & 0xff);
     }
 
     // Catch some common pointer/address errors

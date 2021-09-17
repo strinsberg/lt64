@@ -2,6 +2,8 @@
 #define LT_64_IO_H
 
 #include "ltconst.h"
+#include "ltrun.h"
+#include "stdio.h"
 #include "stddef.h"
 
 /* Read the bytes of the program from the given file into the given memory
@@ -41,5 +43,22 @@ void print_string(WORD* mem, ADDRESS start, ADDRESS max);
  * input needs to be read.
  */
 void read_string(WORD* mem, ADDRESS start, ADDRESS max);
+
+/* Displays the name of a given op code to the given stream.
+ */
+void display_op_name(OP_CODE op, FILE* stream);
+
+/* Main debugging function. Shows the state of the stack and the current op
+ * along with some pointers.
+ */
+void debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
+                        ADDRESS rsp, ADDRESS pc, WORD op);
+
+/* If steps is 0 it will pause and ask for a steps value. Pressing enter without
+ * a value will pause again on the next call. Giving a value will return that
+ * value. If called with a non-zero steps count will not pause and will
+ * return the steps - 1.
+ */
+size_t debug_step(size_t steps);
 
 #endif
