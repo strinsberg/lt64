@@ -49,7 +49,7 @@ typedef enum op_codes { HALT=0,
   MEMCOPY, STRCOPY,  // 5F
   FMULT, FDIV, FMULTSC, FDIVSC,  // 63
 
-  PRNPK, READCH_BF, STREQ, // 66
+  PRNPK, READCH_BF, STREQ, MEMEQ, // 67
 } OP_CODE;
 
 // Some additional codes to track the direction of memory copies

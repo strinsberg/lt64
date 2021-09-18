@@ -91,6 +91,23 @@ tests = [
         + "01 00  00 00  4F 00  00 00",
         "ABCD"
     ),
+    Test(
+        "Memory equality check for buffer and memory after copy, true",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "01 00  00 00  01 00  02 00  5E 01"
+        + "44 00  43 00  01 00  02 00  67 00  00 00",
+        "0001"
+    ),
+    Test(
+        "Memory equality check for buffer and memory after copy, false",
+        "01 00  41 42  01 00  00 00  58 00"
+        + "01 00  43 44  01 00  01 00  58 00"
+        + "01 00  00 00  01 00  02 00  5E 01"
+        + "01 00  aa bb  01 00  01 00  04 00"  # store word over second in mem
+        + "44 00  43 00  01 00  02 00  67 00  00 00",
+        "0000"
+    ),
 
     ### Buffer and Chars ###
     Test(

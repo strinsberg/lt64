@@ -30,4 +30,12 @@ static inline WORDU string_length(WORD* mem, ADDRESS start) {
   return start - (atemp - 1);
 }
 
+inline static WORDU mem_equal(WORD* mem, ADDRESS first,
+                              ADDRESS second, ADDRESS length) {
+  for (ADDRESS i = 0; i < length; i++)
+    if (mem[first + i] != mem[second + i])
+      return 0;
+  return 1;
+}
+
 #endif
