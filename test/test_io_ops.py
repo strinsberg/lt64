@@ -6,9 +6,9 @@ output is written.
 
 Printing tests all need clean stacks at the end of the VM run. This way nothing
 is printed for the stack and the expected output can just be what should be
-printed. If it is desireable the stack contents will be printed immediately
+printed. If it is desirable the stack contents will be printed immediately
 after any other output with no added newlines or spaces. So if you don't print
-a space or newline you could get someting like '-1aabb' for output. This is
+a space or newline you could get something like '-1aabb' for output. This is
 fine, but not super intuitive.
 
 Read tests take an extra input member after the program input. This input will
@@ -113,10 +113,45 @@ read_tests = [
         "0041 0042"
     ),
     vmtest.IoTest(
-        "Reads a string up to a space into the buffer.",
+        "Reads a line into the buffer.",
         "56 00  4C 00  00 00",
         "ABCD\n",
         "ABCD"
+    ),
+    vmtest.IoTest(
+        "Reads an even length set of chars into buffer, byte offset",
+        "01 00 00 00 65 00  01 00 01 00 65 00"
+        + "01 00 02 00 65 00  01 00 03 00 65 00"
+        + "4C 00  00 00",
+        "ABCD",
+        "ABCD"
+    ),
+    vmtest.IoTest(
+        "Reads an odd length set of chars into buffer, byte offset",
+        "01 00 00 00 65 00  01 00 01 00 65 00"
+        + "01 00 02 00 65 00"
+        + "4C 00  00 00",
+        "ABC",
+        "ABC"
+    ),
+    # NOTE that string and memory copying uses offsets to fmp and bfp
+    # but string eq just takes 2 raw addresses
+    vmtest.IoTest(
+        "Check equality of two strings in memory, equal.",
+        "56 00 01 00 00 00 5F 01"  # read a string and copy it to fmp
+        + "44 00 43 00 66 00"  # check that string at bfp and fmp are eq
+        + "00 00",
+        "ABCD\n",
+        "0001"  # stack is 0 or 1 for the equality check
+    ),
+    vmtest.IoTest(
+        "Check equality of two strings in memory, not equal.",
+        "56 00 01 00 00 00 5F 01"  # read a string and copy it to fmp
+        + "01 00 aa bb 01 00 01 00 04 00"  # load a new word over the C
+        + "44 00 43 00 66 00"  # check that string at bfp and fmp are eq
+        + "00 00",
+        "ABCD\n",
+        "0000"  # stack is 0 or 1 for the equality check
     ),
 
 ]

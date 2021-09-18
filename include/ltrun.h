@@ -6,7 +6,7 @@
 
 /* All op codes for the VM.
  * If new codes are added at this point they MUST be added to the end. The
- * VM will still run fine if they are rearanged, but the tests depend on the
+ * VM will still run fine if they are rearranged, but the tests depend on the
  * current code assignment.
  */
 typedef enum op_codes { HALT=0,
@@ -49,7 +49,7 @@ typedef enum op_codes { HALT=0,
   MEMCOPY, STRCOPY,  // 5F
   FMULT, FDIV, FMULTSC, FDIVSC,  // 63
 
-  PRNPK,
+  PRNPK, READCH_BF, STREQ, // 66
 } OP_CODE;
 
 // Some additional codes to track the direction of memory copies

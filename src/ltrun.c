@@ -618,6 +618,51 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
         }
         break;
 
+      /// Other ///
+      case READCH_BF:
+        {
+          char ch;
+          scanf("%c", &ch);
+          atemp = data_stack[dsp--];
+          if (atemp % 2 == 0) {
+            memory[bfp + (atemp / 2)] = ch;
+          } else {
+            memory[bfp + (atemp / 2)] |= (ch << BYTE_SIZE);
+            memory[bfp + (atemp / 2) + 1] = 0;
+          }
+        }
+        break;
+      case STREQ:
+        {
+          atemp = data_stack[dsp--];
+          utemp = data_stack[dsp--];
+          size_t i = 0;
+
+          while (i + atemp < END_MEMORY && i + utemp < END_MEMORY) {
+            WORDU chs1, chs2;
+            chs1 = memory[atemp + i];
+            chs2 = memory[utemp + i];
+
+            // if the packed chars don't equal then this is false
+            // NOTE that this means that other functions must always
+            // zero a whole word when the first byte is 0
+            if (chs1 != chs2) {
+              data_stack[++dsp] = 0;
+              break;
+
+            // if any part of the word is 0 we are done, and they are equal.
+            // only check one cause they are equal.
+            } else if (chs1 == 0  // whole thing is 0
+                       || (chs1 & 0x00ff) == 0     // first byte is 0
+                       || (chs1 & 0xff00) == 0) {  // second byte is 0
+              data_stack[++dsp] = 1;
+              break;
+            }
+            i++;
+          }
+        }
+        break;
+
       /// BAD OP CODE ///
       default:
         fprintf(stderr, "Error: Unknown OP code: 0x%hx\n", memory[pc]);
