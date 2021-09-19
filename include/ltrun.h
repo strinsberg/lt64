@@ -50,6 +50,7 @@ typedef enum op_codes { HALT=0,
   FMULT, FDIV, FMULTSC, FDIVSC,  // 63
 
   PRNPK, READCH_BF, STREQ, MEMEQ, // 67
+  IS_EOF, RESET_EOF, // 69
 } OP_CODE;
 
 // Some additional codes to track the direction of memory copies

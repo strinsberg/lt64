@@ -38,11 +38,10 @@ void print_string(WORD* mem, ADDRESS start, ADDRESS max);
  * the next word is set to 0. For an uneven number of characters the top byte
  * of the last word is set to 0x00.
  *
- * TODO push a flag value onto the stack to indicate if max was reached before
- * all input characters were read. This way it is possible to know that more
- * input needs to be read.
+ * Returns a number to indicate the result. -1 for EOF, 0 for reaching max,
+ * and 1 for successfully reading to a \n.
  */
-void read_string(WORD* mem, ADDRESS start, ADDRESS max);
+WORD read_string(WORD* mem, ADDRESS start, ADDRESS max);
 
 /* Displays the name of a given op code to the given stream.
  */

@@ -69,16 +69,15 @@ void print_string(WORD* mem, ADDRESS start, ADDRESS max) {
   }
 }
 
-void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
+WORD read_string(WORD* mem, ADDRESS start, ADDRESS max) {
   ADDRESS atemp = start;
   bool first = true;
   WORDU two_chars = 0;
 
   while (atemp < max - 1) {
-    char ch;
-    scanf("%c", &ch);
+    char ch = getchar();
 
-    if (ch == '\n') {
+    if (ch == '\n' || ch == EOF) {
       if (first) {
         two_chars = 0;
       } else {
@@ -86,7 +85,7 @@ void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
       }
       mem[atemp] = two_chars;
       mem[atemp + 1] = 0;
-      return;
+      return ch == EOF ? -1 : 1;
 
     } else {
       if (first) {
@@ -100,6 +99,7 @@ void read_string(WORD* mem, ADDRESS start, ADDRESS max) {
     }
   }
   mem[atemp + 1] = 0;
+  return 0;
 }
 
 // this is formated this way to keep it from taking up 300 lines

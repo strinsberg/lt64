@@ -112,11 +112,19 @@ read_tests = [
         "AB",
         "0041 0042"
     ),
+    # For readln tests the + "" is the expected stack value
+    # it will be printed with now space after the string
     vmtest.IoTest(
         "Reads a line into the buffer.",
         "56 00  4C 00  00 00",
         "ABCD\n",
-        "ABCD"
+        "ABCD" + "0001"
+    ),
+    vmtest.IoTest(
+        "Reads a really long line into the buffer.",
+        "56 00  4C 00  00 00",
+        "A"*3000,
+        ("A"*2046) + "0000"  # 2046 because we set the last whole word to 0
     ),
     vmtest.IoTest(
         "Reads an even length set of chars into buffer, byte offset",
@@ -136,13 +144,14 @@ read_tests = [
     ),
     # NOTE that string and memory copying uses offsets to fmp and bfp
     # but string eq just takes 2 raw addresses
+    # bottom stack value is the return from readln to indicate success
     vmtest.IoTest(
         "Check equality of two strings in memory, equal.",
         "56 00 01 00 00 00 5F 01"  # read a string and copy it to fmp
         + "44 00 43 00 66 00"  # check that string at bfp and fmp are eq
         + "00 00",
         "ABCD\n",
-        "0001"  # stack is 0 or 1 for the equality check
+        "0001 0001"  # stack is 0 or 1 for the equality check
     ),
     vmtest.IoTest(
         "Check equality of two strings in memory, not equal.",
@@ -151,7 +160,7 @@ read_tests = [
         + "44 00 43 00 66 00"  # check that string at bfp and fmp are eq
         + "00 00",
         "ABCD\n",
-        "0000"  # stack is 0 or 1 for the equality check
+        "0001 0000"  # stack is 0 or 1 for the equality check
     ),
 
 ]

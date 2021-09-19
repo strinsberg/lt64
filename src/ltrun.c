@@ -15,6 +15,9 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
   bfp = length;
   fmp = length + BUFFER_SIZE;
 
+  // conditions
+  bool eof = false;
+
   // Declare some temporary "registers" for working with intermediate values
   ADDRESS atemp;
   WORD temp;
@@ -466,19 +469,36 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
 
       /// Reading ///
       case WREAD:
-        scanf("%hd", &temp);
-        data_stack[++dsp] = temp;
+        dtemp = scanf("%hd", &temp);
+        if (dtemp == EOF) {
+          eof = true;
+          data_stack[++dsp] = 0;
+        } else {
+          data_stack[++dsp] = temp;
+        }
         break;
       case DREAD:
-        scanf("%d", &dtemp);
-        set_dword(data_stack, dsp + 1, dtemp);
-        dsp+=2;
+        {
+          int res = scanf("%d", &dtemp);
+          if (res == EOF) {
+            eof = true;
+            set_dword(data_stack, dsp + 1, 0);
+          } else {
+            set_dword(data_stack, dsp + 1, dtemp);
+          }
+          dsp+=2;
+        }
         break;
       case FREAD:
         {
           double x;
-          scanf("%lf", &x);
-          set_dword(data_stack, dsp + 1, (DWORD)(x * SCALES[ DEFAULT_SCALE ]));
+          dtemp = scanf("%lf", &x);
+          if (dtemp == EOF) {
+            eof = true;
+            set_dword(data_stack, dsp + 1, 0);
+          } else {
+            set_dword(data_stack, dsp + 1, (DWORD)(x * SCALES[ DEFAULT_SCALE ]));
+          }
           dsp+=2;
         }
         break;
@@ -491,20 +511,34 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
             dtemp = SCALES[ DEFAULT_SCALE ];
           }
           double x;
-          scanf("%lf", &x);
-          set_dword(data_stack, dsp + 1, (DWORD)(x * dtemp));
+          int res = scanf("%lf", &x);
+          if (res == EOF) {
+            eof = true;
+            set_dword(data_stack, dsp + 1, 0);
+          } else {
+            set_dword(data_stack, dsp + 1, (DWORD)(x * dtemp));
+          }
           dsp+=2;
         }
         break;
       case READCH:
         {
-          char ch;
-          scanf("%c", &ch);
-          data_stack[++dsp] = (WORD)ch & 0xff;
+          char ch = getchar();
+          if (ch == EOF) {
+            eof = true;
+            data_stack[++dsp] = 0;
+          } else {
+            data_stack[++dsp] = (WORD)ch & 0xff;
+          }
         }
         break;
       case READLN:
-        read_string(memory, bfp, fmp);
+        temp = read_string(memory, bfp, fmp);
+        if (temp == -1) {
+          eof = true;
+        } else {
+          data_stack[++dsp] = temp;
+        }
         break;
 
       /// Buffer and Chars ///
@@ -621,9 +655,13 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
       /// Other ///
       case READCH_BF:
         {
-          char ch;
-          scanf("%c", &ch);
+          char ch = getchar();
           atemp = data_stack[dsp--];
+          if (ch == EOF) {
+            eof = true;
+            ch = 0;
+          }
+
           if (atemp % 2 == 0) {
             memory[bfp + (atemp / 2)] = ch;
           } else {
@@ -663,6 +701,12 @@ size_t execute(WORD* memory, size_t length, WORD* data_stack, WORD* return_stack
           WORDU second = data_stack[dsp--];
           data_stack[++dsp] = mem_equal(memory, first, second, size);
         }
+        break;
+      case IS_EOF:
+        data_stack[++dsp] = eof ? 1 : 0;
+        break;
+      case RESET_EOF:
+        eof = false;
         break;
 
       /// BAD OP CODE ///
