@@ -5,6 +5,7 @@
 #include "ltrun.h"
 #include "stdio.h"
 #include "stddef.h"
+#include "stdbool.h"
 
 /* Read the bytes of the program from the given file into the given memory
  * array.
@@ -53,11 +54,11 @@ void display_op_name(OP_CODE op, FILE* stream);
 void debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
                         ADDRESS rsp, ADDRESS pc, WORD op);
 
-/* If steps is 0 it will pause and ask for a steps value. Pressing enter without
- * a value will pause again on the next call. Giving a value will return that
- * value. If called with a non-zero steps count will not pause and will
- * return the steps - 1.
+/* Asks if user wants to step, the default is yes with just pressing return.
+ * If any input is entered it means that they don't want to step but instead
+ * jump to next break point.
+ * Returns true for step and false for jump.
  */
-size_t debug_step(size_t steps);
+bool debug_step();
 
 #endif

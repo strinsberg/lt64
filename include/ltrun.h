@@ -51,6 +51,9 @@ typedef enum op_codes { HALT=0,
 
   PRNPK, READCH_BF, STREQ, MEMEQ, // 67
   IS_EOF, RESET_EOF, // 69
+
+  BRKPNT, // 6A
+
 } OP_CODE;
 
 // Some additional codes to track the direction of memory copies

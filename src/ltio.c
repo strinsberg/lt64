@@ -223,19 +223,12 @@ void debug_info_display(WORD* data_stack, WORD* return_stack, ADDRESS dsp,
   fprintf(stderr, "\n");
 }
 
-size_t debug_step(size_t steps) {
-  if (steps > 0) {
-    return steps - 1;
-  } else {
-    char buffer[10];
-    int size = 10;
+bool debug_step() {
+  char *buffer = NULL;
+  size_t size;
 
-    fflush(stdout);
-    fprintf(stderr, "\n***Step: ");
-    if ( fgets(buffer, size, stdin) != NULL ) {
-      return strtol(buffer,NULL,10);
-    } else {
-      return 0;
-    }
-  }
+  fflush(stdout);
+  fprintf(stderr, "\n***Step? ");
+  ssize_t res = getline(&buffer, &size, stdin);
+  return res <= 1;
 }
